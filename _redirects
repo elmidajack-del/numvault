@@ -1,1 +1,1 @@
-/numbers/:num  /number.html  200
+/numbers/*  /number.html  200
