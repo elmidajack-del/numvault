@@ -342,8 +342,18 @@
       factsList.innerHTML = factsHtml + mathFacts;
     }
 
-    function trackVisits(num) {
+async function trackVisits(num) {
       const counterEl = document.getElementById("visit-counter");
+      try {
+        const res = await fetch(`/api/views?n=${num}`, { method: "POST" });
+        if (res.ok) {
+          const data = await res.json();
+          counterEl.textContent = `👁️ Views: ${data.views.toLocaleString()}`;
+          return;
+        }
+      } catch (e) {}
+
+      // Fallback to localStorage only if offline or running locally without Pages Functions
       const key = `numvault_views_${num}`;
       let views = parseInt(localStorage.getItem(key) || "0") + 1;
       localStorage.setItem(key, views);
