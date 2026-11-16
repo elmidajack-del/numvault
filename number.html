@@ -304,20 +304,23 @@
       let factsList = document.getElementById("facts-list");
       let factsHtml = "";
 
+      // 1. Built-in facts
       if (CUSTOM_FACTS[num]) {
         factsHtml += CUSTOM_FACTS[num].map(fact => `<li>${fact}</li>`).join("");
       }
 
+      // 2. Global Cloudflare KV facts
       try {
-        const response = await fetch('/facts.json');
+        const response = await fetch(`/api/facts?n=${num}`);
         if (response.ok) {
-          const allFacts = await response.json();
-          if (allFacts[num] && Array.isArray(allFacts[num])) {
-            factsHtml += allFacts[num].map(fact => `<li>${fact} 🌟 <small style="color: var(--accent);">(Community)</small></li>`).join("");
+          const kvFacts = await response.json();
+          if (Array.isArray(kvFacts) && kvFacts.length > 0) {
+            factsHtml += kvFacts.map(fact => `<li>${fact} 🌟 <small style="color: var(--accent);">(Community)</small></li>`).join("");
           }
         }
       } catch (e) {}
 
+      // 3. Math fallback facts
       let mathFacts = "";
       let sqrtN = Math.sqrt(num);
       if (num > 1 && Number.isInteger(sqrtN)) {
@@ -351,7 +354,6 @@
     document.getElementById("fact-form")?.addEventListener("submit", async function(e) {
       e.preventDefault();
       
-      const WEB_APP_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
       const currentNum = document.getElementById("hidden-number-input").value;
       const factText = document.getElementById("fact-text").value;
       const submitterName = document.getElementById("submitter-name").value;
@@ -359,37 +361,39 @@
       const formattedSubmitter = submitterName ? ` — ${submitterName}` : "";
       const newFactString = `${factText}${formattedSubmitter}`;
 
-      const payload = { number: currentNum, fact: factText, submitter: submitterName };
       const btn = e.target.querySelector("button[type='submit']");
-      btn.textContent = "Submitting...";
+      btn.textContent = "Saving...";
       btn.disabled = true;
 
       try {
-        await fetch(WEB_APP_URL, {
+        const res = await fetch("/api/facts", {
           method: "POST",
-          mode: "no-cors",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            number: currentNum,
+            fact: factText,
+            submitter: submitterName
+          })
         });
+
+        if (!res.ok) throw new Error("Failed to save");
         
         e.target.style.display = "none";
         const successDiv = document.getElementById("form-success");
         successDiv.innerHTML = `
-          Thank you! Your fact has been logged for number <strong>#${parseInt(currentNum).toLocaleString()}</strong>. 
+          Thank you! Your fact is now saved globally for <strong>#${parseInt(currentNum).toLocaleString()}</strong>. 
           <br><br>
-          <a href="/number.html?n=${currentNum}" class="btn">
-            &larr; Return to Record
-          </a>
+          <a href="/number.html?n=${currentNum}" class="btn">&larr; Refresh Record</a>
         `;
         successDiv.style.display = "block";
 
         const factsList = document.getElementById("facts-list");
         const newLi = document.createElement("li");
-        newLi.innerHTML = `${newFactString} 🌟 <small style="color: var(--accent);">(Just Added)</small>`;
+        newLi.innerHTML = `${newFactString} 🌟 <small style="color: var(--accent);">(Community)</small>`;
         factsList.prepend(newLi);
 
       } catch (err) {
-        alert("Network error. Please check your connection.");
+        alert("Could not save fact. Check your KV binding in Cloudflare.");
         btn.textContent = "Submit Fact";
         btn.disabled = false;
       }
