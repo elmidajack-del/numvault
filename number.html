@@ -129,38 +129,34 @@
   </div>
 
   <script>
-    // --- GLOBAL VARIABLES & DICTIONARY ---
     let globalBases = {};
 
     const CUSTOM_FACTS = {
-      1: [
+      "1": [
         "The multiplicative identity for integers, real numbers, and complex numbers.",
         "The first Fibonacci number (and the second), triangular number, and square/cube number.",
         "The only positive integer with exactly one positive divisor."
       ],
-      2: [
+      "2": [
         "The smallest prime number and the only even prime.",
         "The base of the binary numeral system used across modern computing."
       ],
-      42: [
+      "42": [
         "The 'Answer to the Ultimate Question of Life, the Universe, and Everything' in Douglas Adams' Hitchhiker's Guide.",
         "The fifth Catalan number and a pronic number (6 × 7)."
       ]
     };
 
-    // Extract number from query parameter (e.g. /number.html?n=42 -> 42)
     const urlParams = new URLSearchParams(window.location.search);
-    const rawNum = urlParams.get('n');
-    const n = parseInt(rawNum, 10);
+    const rawNum = (urlParams.get('n') || "").trim();
 
-    if (isNaN(n) || n < 1) {
-      // Graceful fallback: Show an interactive search prompt instead of breaking
+    if (!/^[1-9][0-9]*$/.test(rawNum)) {
       document.getElementById("content-container").innerHTML = `
         <div class="card" style="text-align: center; padding: 3rem 1.5rem;">
           <h2 style="margin-top: 0; font-size: 2rem;">No Number Specified</h2>
-          <p style="color: var(--muted); margin-bottom: 1.5rem;">Please enter a positive integer to view its public record:</p>
-          <form onsubmit="jumpToNumber(event)" style="display: flex; gap: 0.5rem; justify-content: center; max-width: 450px; margin: 0 auto;">
-            <input type="number" id="jump-input" min="1" placeholder="e.g. 42" required style="flex: 1;" />
+          <p style="color: var(--muted); margin-bottom: 1.5rem;">Enter any positive integer (small, large, or huge) to view or index its record:</p>
+          <form onsubmit="jumpToNumber(event)" style="display: flex; gap: 0.5rem; justify-content: center; max-width: 500px; margin: 0 auto;">
+            <input type="text" inputmode="numeric" pattern="[1-9][0-9]*" id="jump-input" placeholder="e.g. 42 or 170141183460469231731687303715884105727" required style="flex: 1;" />
             <button type="submit" class="btn">Search</button>
           </form>
           <p style="margin-top: 2rem;"><a href="/index.html" style="color: var(--accent); text-decoration: none;">&larr; Return to Index Directory</a></p>
@@ -169,149 +165,228 @@
       document.getElementById("page-title").textContent = "Specify Number — NumVault";
       document.getElementById("visit-counter").style.display = "none";
     } else {
-      initPage(n);
+      initPage(BigInt(rawNum), rawNum);
     }
 
     function jumpToNumber(e) {
       e.preventDefault();
-      const val = document.getElementById('jump-input').value;
-      if (val && parseInt(val, 10) >= 1) {
-        window.location.href = '/number.html?n=' + parseInt(val, 10);
+      const val = document.getElementById('jump-input').value.trim();
+      if (/^[1-9][0-9]*$/.test(val)) {
+        window.location.href = '/number.html?n=' + val;
       }
     }
 
-    function getDivisors(num) {
-      let small = [], large = [];
-      let limit = Math.floor(Math.sqrt(num));
-      for (let i = 1; i <= limit; i++) {
-        if (num % i === 0) {
-          small.push(i);
-          if (i !== num / i) large.push(num / i);
+    function formatBigInt(n) {
+      return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // Modular exponentiation for Miller-Rabin primality test
+    function modPow(base, exp, mod) {
+      let result = 1n;
+      base = base % mod;
+      while (exp > 0n) {
+        if (exp % 2n === 1n) result = (result * base) % mod;
+        exp = exp >> 1n;
+        base = (base * base) % mod;
+      }
+      return result;
+    }
+
+    // Deterministic/Probabilistic Miller-Rabin primality check for huge BigInts
+    function isProbablePrime(n) {
+      if (n < 2n) return false;
+      if (n === 2n || n === 3n) return true;
+      if (n % 2n === 0n) return false;
+
+      let d = n - 1n;
+      let r = 0n;
+      while (d % 2n === 0n) {
+        d /= 2n;
+        r += 1n;
+      }
+
+      const witnesses = [2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n];
+      for (const a of witnesses) {
+        if (a >= n) break;
+        let x = modPow(a, d, n);
+        if (x === 1n || x === n - 1n) continue;
+        let composite = true;
+        for (let i = 1n; i < r; i++) {
+          x = (x * x) % n;
+          if (x === n - 1n) {
+            composite = false;
+            break;
+          }
         }
+        if (composite) return false;
       }
-      large.reverse();
-      return small.concat(large);
+      return true;
     }
 
-    function getPrimeFactorization(num) {
-      if (num <= 1) return [];
+    // Trial division capped at 1,000,000 so huge numbers stay fast & responsive
+    function analyzeFactorization(num) {
+      if (num <= 1n) return { factors: [], complete: true, remainder: 1n };
       let factors = [];
       let temp = num;
       let count = 0;
-      while (temp % 2 === 0) {
-        count++;
-        temp /= 2;
-      }
-      if (count > 0) factors.push([2, count]);
 
-      let d = 3;
-      while (d * d <= temp) {
+      while (temp % 2n === 0n) {
+        count++;
+        temp /= 2n;
+      }
+      if (count > 0) factors.push([2n, count]);
+
+      let d = 3n;
+      const limit = 1000000n;
+      while (d * d <= temp && d <= limit) {
         count = 0;
-        while (temp % d === 0) {
+        while (temp % d === 0n) {
           count++;
           temp /= d;
         }
         if (count > 0) factors.push([d, count]);
-        d += 2;
+        d += 2n;
       }
-      if (temp > 1) factors.push([temp, 1]);
-      return factors;
+
+      if (temp === 1n) {
+        return { factors, complete: true, remainder: 1n };
+      }
+      if (isProbablePrime(temp)) {
+        factors.push([temp, 1]);
+        return { factors, complete: true, remainder: 1n };
+      }
+      return { factors, complete: false, remainder: temp };
     }
 
-    function toBase(num, base) {
+    // Generate all divisors from complete prime factorization
+    function divisorsFromFactors(factors) {
+      let divs = [1n];
+      for (const [prime, exp] of factors) {
+        let next = [];
+        let pPow = 1n;
+        for (let e = 0; e <= exp; e++) {
+          for (const d of divs) next.push(d * pPow);
+          pPow *= prime;
+        }
+        divs = next;
+      }
+      divs.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+      return divs;
+    }
+
+    function toBaseBigInt(num, base) {
       const digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      if (num === 0) return "0";
+      const b = BigInt(base);
+      if (num === 0n) return "0";
       let res = [];
       let temp = num;
-      while (temp > 0) {
-        res.push(digits[temp % base]);
-        temp = Math.floor(temp / base);
+      while (temp > 0n) {
+        res.push(digits[Number(temp % b)]);
+        temp /= b;
       }
       return res.reverse().join("");
     }
 
-    function initPage(num) {
-      document.getElementById("page-title").textContent = `Number ${num.toLocaleString()} — NumVault`;
-      document.getElementById("num-heading").textContent = num.toLocaleString();
-      document.getElementById("prev-link").href = num > 1 ? `/number.html?n=${num - 1}` : "#";
-      document.getElementById("next-link").href = `/number.html?n=${num + 1}`;
+    function initPage(num, rawStr) {
+      const displayStr = rawStr.length <= 30 ? formatBigInt(num) : `${rawStr.slice(0, 12)}...${rawStr.slice(-12)} (${rawStr.length} digits)`;
+      document.getElementById("page-title").textContent = `Number ${displayStr} — NumVault`;
+      document.getElementById("num-heading").textContent = formatBigInt(num);
+      document.getElementById("num-heading").style.wordBreak = "break-all";
+      document.getElementById("num-heading").style.fontSize = rawStr.length > 24 ? "1.5rem" : "2.5rem";
 
-      // Set form hidden value & labels
-      document.getElementById("form-num-label").textContent = num.toLocaleString();
-      document.getElementById("hidden-number-input").value = num;
+      document.getElementById("prev-link").href = num > 1n ? `/number.html?n=${(num - 1n).toString()}` : "#";
+      document.getElementById("next-link").href = `/number.html?n=${(num + 1n).toString()}`;
 
-      // Classification
-      let factors = getPrimeFactorization(num);
-      let badgeEl = document.getElementById("num-badge");
-      if (num === 1) {
+      document.getElementById("form-num-label").textContent = displayStr;
+      document.getElementById("hidden-number-input").value = rawStr;
+
+      // Factorization & Classification
+      const { factors, complete, remainder } = analyzeFactorization(num);
+      const badgeEl = document.getElementById("num-badge");
+
+      if (num === 1n) {
         badgeEl.textContent = "Unit (Neither Prime nor Composite)";
         badgeEl.style.background = "#262c38"; badgeEl.style.color = "#4f8cff";
-      } else if (factors.length === 1 && factors[0][1] === 1) {
-        badgeEl.textContent = "Prime";
+      } else if (complete && factors.length === 1 && factors[0][1] === 1) {
+        badgeEl.textContent = rawStr.length > 15 ? "Probable Prime" : "Prime";
         badgeEl.style.background = "#1e3329"; badgeEl.style.color = "#4ade80";
       } else {
-        let totalExp = factors.reduce((acc, f) => acc + f[1], 0);
-        badgeEl.textContent = totalExp === 2 ? "Composite (Semiprime)" : "Composite";
+        const totalExp = factors.reduce((acc, f) => acc + f[1], 0);
+        badgeEl.textContent = (complete && totalExp === 2) ? "Composite (Semiprime)" : "Composite";
         badgeEl.style.background = "#33261e"; badgeEl.style.color = "#fb923c";
       }
 
       // Factorization HTML
       let factHtml = "<code>1</code> (Empty product)";
-      if (factors.length > 0) {
-        let parts = factors.map(([b, e]) => e === 1 ? `${b}` : `${b}<sup>${e}</sup>`);
+      if (factors.length > 0 || !complete) {
+        let parts = factors.map(([b, e]) => e === 1 ? `${formatBigInt(b)}` : `${formatBigInt(b)}<sup>${e}</sup>`);
+        if (!complete) {
+          parts.push(`C${remainder.toString().length} (${formatBigInt(remainder)})`);
+        }
         factHtml = `<code>${parts.join(" &times; ")}</code>`;
       }
       document.getElementById("val-factors").innerHTML = factHtml;
 
-      // Divisors
-      let divisors = getDivisors(num);
-      let divDisplay = divisors.length > 100 ? divisors.slice(0, 100).join(", ") + ` ... (showing 100 of ${divisors.length.toLocaleString()} total)` : divisors.join(", ");
-      document.getElementById("val-divisors").innerHTML = `<code>${divDisplay}</code>`;
-      document.getElementById("val-divcount").textContent = divisors.length.toLocaleString();
-      
-      let divSum = divisors.reduce((a, b) => a + b, 0);
-      document.getElementById("val-divsum").textContent = divSum.toLocaleString();
-      document.getElementById("val-parity").textContent = num % 2 === 0 ? "Even" : "Odd";
+      // Divisors (computed when factorization is complete and divisor count <= 10,000)
+      let totalDivCount = 1n;
+      for (const [, e] of factors) totalDivCount *= BigInt(e + 1);
 
-      // Bases
-      document.getElementById("val-b2").innerHTML = `<code>${toBase(num, 2)}</code>`;
-      document.getElementById("val-b8").innerHTML = `<code>${toBase(num, 8)}</code>`;
-      document.getElementById("val-b16").innerHTML = `<code>${toBase(num, 16)}</code>`;
-      document.getElementById("val-b36").innerHTML = `<code>${toBase(num, 36)}</code>`;
+      if (complete && totalDivCount <= 10000n) {
+        const divisors = divisorsFromFactors(factors);
+        const divDisplay = divisors.length > 100
+          ? divisors.slice(0, 100).map(formatBigInt).join(", ") + ` ... (showing 100 of ${divisors.length.toLocaleString()})`
+          : divisors.map(formatBigInt).join(", ");
+        document.getElementById("val-divisors").innerHTML = `<code>${divDisplay}</code>`;
+        document.getElementById("val-divcount").textContent = divisors.length.toLocaleString();
 
-      let selectEl = document.getElementById("base-select");
+        const divSum = divisors.reduce((a, b) => a + b, 0n);
+        document.getElementById("val-divsum").textContent = formatBigInt(divSum);
+      } else if (complete) {
+        document.getElementById("val-divisors").innerHTML = `<code>Too many divisors to list (${formatBigInt(totalDivCount)} total)</code>`;
+        document.getElementById("val-divcount").textContent = formatBigInt(totalDivCount);
+        document.getElementById("val-divsum").textContent = "Large composite sum";
+      } else {
+        document.getElementById("val-divisors").innerHTML = `<code>Partial factorization (unfactored ${remainder.toString().length}-digit composite cofactor)</code>`;
+        document.getElementById("val-divcount").textContent = `≥ ${formatBigInt(totalDivCount * 2n)}`;
+        document.getElementById("val-divsum").textContent = "Requires full factorization";
+      }
+
+      document.getElementById("val-parity").textContent = num % 2n === 0n ? "Even" : "Odd";
+
+      // Bases (BigInt supports arbitrarily large integers)
+      document.getElementById("val-b2").innerHTML = `<code>${toBaseBigInt(num, 2)}</code>`;
+      document.getElementById("val-b8").innerHTML = `<code>${toBaseBigInt(num, 8)}</code>`;
+      document.getElementById("val-b16").innerHTML = `<code>${toBaseBigInt(num, 16)}</code>`;
+      document.getElementById("val-b36").innerHTML = `<code>${toBaseBigInt(num, 36)}</code>`;
+
+      const selectEl = document.getElementById("base-select");
       let options = "";
       for (let b = 2; b <= 36; b++) {
-        globalBases[b] = toBase(num, b);
+        globalBases[b] = toBaseBigInt(num, b);
         options += `<option value="${b}" ${b === 12 ? "selected" : ""}>Base ${b}</option>`;
       }
       selectEl.innerHTML = options;
       document.getElementById("val-custom-base").textContent = globalBases[12];
 
-      // Load Facts (Custom + JSON + Math Fallback)
-      loadFacts(num, divisors);
-
-      // Visitor Counter
-      trackVisits(num);
+      loadFacts(num, rawStr, complete, factors);
+      trackVisits(rawStr);
     }
 
     function updateCustomBase() {
-      let b = document.getElementById("base-select").value;
+      const b = document.getElementById("base-select").value;
       document.getElementById("val-custom-base").textContent = globalBases[b];
     }
 
-    async function loadFacts(num, divisors) {
-      let factsList = document.getElementById("facts-list");
+    async function loadFacts(num, rawStr, complete, factors) {
+      const factsList = document.getElementById("facts-list");
       let factsHtml = "";
 
-      // 1. Built-in facts
-      if (CUSTOM_FACTS[num]) {
-        factsHtml += CUSTOM_FACTS[num].map(fact => `<li>${fact}</li>`).join("");
+      if (CUSTOM_FACTS[rawStr]) {
+        factsHtml += CUSTOM_FACTS[rawStr].map(fact => `<li>${fact}</li>`).join("");
       }
 
-      // 2. Global Cloudflare KV facts
       try {
-        const response = await fetch(`/api/facts?n=${num}`);
+        const response = await fetch(`/api/facts?n=${rawStr}`);
         if (response.ok) {
           const kvFacts = await response.json();
           if (Array.isArray(kvFacts) && kvFacts.length > 0) {
@@ -320,32 +395,19 @@
         }
       } catch (e) {}
 
-      // 3. Math fallback facts
-      let mathFacts = "";
-      let sqrtN = Math.sqrt(num);
-      if (num > 1 && Number.isInteger(sqrtN)) {
-        mathFacts += `<li>${num.toLocaleString()} is a perfect square (${sqrtN.toLocaleString()}²).</li>`;
-      }
-      let properSum = divisors.slice(0, -1).reduce((a, b) => a + b, 0);
-      if (properSum === num && num > 1) {
-        mathFacts += `<li>${num.toLocaleString()} is a perfect number (equal to the sum of its proper divisors).</li>`;
-      } else if (properSum > num) {
-        mathFacts += `<li>${num.toLocaleString()} is an abundant number.</li>`;
-      } else if (num > 1) {
-        mathFacts += `<li>${num.toLocaleString()} is a deficient number.</li>`;
-      }
+      let mathFacts = `<li>Digit length: <strong>${rawStr.length.toLocaleString()}</strong> decimal ${rawStr.length === 1 ? "digit" : "digits"} (${toBaseBigInt(num, 2).length.toLocaleString()} bits).</li>`;
 
-      if (!factsHtml && !mathFacts) {
-        mathFacts = `<li>A positive integer with ${divisors.length.toLocaleString()} total divisors.</li>`;
+      if (complete && factors.length > 0 && factors.every(([, e]) => e % 2 === 0)) {
+        mathFacts += `<li>Perfect square.</li>`;
       }
 
       factsList.innerHTML = factsHtml + mathFacts;
     }
 
-async function trackVisits(num) {
+    async function trackVisits(rawStr) {
       const counterEl = document.getElementById("visit-counter");
       try {
-        const res = await fetch(`/api/views?n=${num}`, { method: "POST" });
+        const res = await fetch(`/api/views?n=${rawStr}`, { method: "POST" });
         if (res.ok) {
           const data = await res.json();
           counterEl.textContent = `👁️ Views: ${data.views.toLocaleString()}`;
@@ -353,21 +415,20 @@ async function trackVisits(num) {
         }
       } catch (e) {}
 
-      // Fallback to localStorage only if offline or running locally without Pages Functions
-      const key = `numvault_views_${num}`;
+      const key = `numvault_views_${rawStr}`;
       let views = parseInt(localStorage.getItem(key) || "0") + 1;
       localStorage.setItem(key, views);
       counterEl.textContent = `👁️ Views: ${views.toLocaleString()}`;
     }
 
-    // Form submission handler
     document.getElementById("fact-form")?.addEventListener("submit", async function(e) {
       e.preventDefault();
-      
+
       const currentNum = document.getElementById("hidden-number-input").value;
-      const factText = document.getElementById("fact-text").value;
-      const submitterName = document.getElementById("submitter-name").value;
-      
+      const factText = document.getElementById("fact-text").value.trim();
+      const submitterName = document.getElementById("submitter-name").value.trim();
+      if (!factText) return;
+
       const formattedSubmitter = submitterName ? ` — ${submitterName}` : "";
       const newFactString = `${factText}${formattedSubmitter}`;
 
@@ -387,11 +448,11 @@ async function trackVisits(num) {
         });
 
         if (!res.ok) throw new Error("Failed to save");
-        
+
         e.target.style.display = "none";
         const successDiv = document.getElementById("form-success");
         successDiv.innerHTML = `
-          Thank you! Your fact is now saved globally for <strong>#${parseInt(currentNum).toLocaleString()}</strong>. 
+          Thank you! Your fact is now saved globally. 
           <br><br>
           <a href="/number.html?n=${currentNum}" class="btn">&larr; Refresh Record</a>
         `;
@@ -401,7 +462,6 @@ async function trackVisits(num) {
         const newLi = document.createElement("li");
         newLi.innerHTML = `${newFactString} 🌟 <small style="color: var(--accent);">(Community)</small>`;
         factsList.prepend(newLi);
-
       } catch (err) {
         alert("Could not save fact. Check your KV binding in Cloudflare.");
         btn.textContent = "Submit Fact";

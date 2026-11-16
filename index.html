@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NumVault — Public Integer Catalog</title>
-  <meta name="description" content="Explore pure positive integers, prime factorizations, divisors, and base representations on NumVault.">
+  <title>NumVault — Pure Integer Catalog</title>
+  <meta name="description" content="Explore mathematical properties, prime factorizations, divisors, base conversions, and community facts for any positive integer.">
   <meta name="robots" content="index, follow">
   <style>
     :root { 
@@ -17,66 +17,206 @@
       background: var(--bg); color: var(--text); 
       margin: 0; padding: 2rem 1rem; line-height: 1.6; 
     }
-    .container { max-width: 780px; margin: 0 auto; }
+    .container { max-width: 900px; margin: 0 auto; }
     header.site-header { 
       display: flex; justify-content: space-between; align-items: center; 
       margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); 
     }
-    header.site-header a { color: var(--text); text-decoration: none; font-weight: 600; font-size: 1.1rem; }
+    header.site-header a { color: var(--text); text-decoration: none; font-weight: 600; font-size: 1.15rem; }
     header.site-header a:hover { color: var(--accent); }
+    .card { 
+      background: var(--card); border: 1px solid var(--border); 
+      border-radius: 8px; padding: 1.5rem; margin-bottom: 1.25rem; 
+    }
+    h1 { margin: 0 0 0.4rem 0; font-size: 2.1rem; }
+    h2 { margin: 0 0 0.75rem 0; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+    p { margin: 0 0 1rem 0; color: var(--muted); }
+    .search-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    input[type="text"] { 
+      flex: 1; min-width: 240px; background: #111318; color: var(--text); 
+      border: 1px solid var(--border); padding: 0.65rem 0.9rem; 
+      border-radius: 6px; font-size: 1rem; font-family: ui-monospace, monospace;
+    }
+    input[type="text"]:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    .btn { 
+      background: var(--accent); color: #fff; border: none; 
+      padding: 0.65rem 1.2rem; border-radius: 6px; font-weight: 600; 
+      font-size: 0.95rem; cursor: pointer; text-decoration: none; display: inline-block;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-secondary {
+      background: #232833; color: var(--text); border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); opacity: 1; }
+    .quick-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem; }
+    .tag {
+      background: #111318; border: 1px solid var(--border); color: var(--text);
+      padding: 0.25rem 0.65rem; border-radius: 4px; font-size: 0.85rem;
+      text-decoration: none; font-family: ui-monospace, monospace;
+    }
+    .tag:hover { border-color: var(--accent); color: var(--accent); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 0.55rem;
+    }
+    .num-tile {
+      display: block; background: #111318; border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.55rem 0.5rem; text-align: center;
+      color: var(--text); text-decoration: none; font-weight: 600;
+      font-variant-numeric: tabular-nums; font-size: 0.95rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .num-tile:hover { border-color: var(--accent); color: var(--accent); background: #151922; }
+    .num-tile.discovered { border-color: #2f436e; }
+    .pill {
+      font-size: 0.8rem; font-weight: 500; color: var(--accent);
+      background: #1a2438; padding: 0.15rem 0.55rem; border-radius: 999px;
+    }
+    .error-msg { color: #f87171; font-size: 0.88rem; margin-top: 0.5rem; display: none; }
     footer.site-footer { 
       text-align: center; margin-top: 3rem; font-size: 0.85rem; color: var(--muted); 
-      border-top: 1px solid var(--border); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid var(--border); padding-top: 1.5rem; 
+      display: flex; justify-content: space-between; align-items: center;
     }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; }
-    input, button { background: #111318; color: var(--text); border: 1px solid var(--border); padding: 0.6rem 0.8rem; border-radius: 4px; font-size: 0.95rem; }
-    input:focus { outline: 2px solid var(--accent); border-color: transparent; }
-    .btn { background: var(--accent); color: #fff; border: none; font-weight: 600; cursor: pointer; }
-    .btn:hover { opacity: 0.9; }
   </style>
 </head>
 <body>
   <div class="container">
     <header class="site-header">
       <a href="/index.html">NumVault 🗄️</a>
-      <span style="color: var(--muted); font-size: 0.9rem;">Public Integer Catalog &amp; Number Theory Engine</span>
+      <span style="color: var(--muted); font-size: 0.9rem;">Pure Integer Catalog</span>
     </header>
 
-    <div class="card" style="text-align: center; padding: 2.5rem 1.5rem;">
-      <h2 style="margin-top: 0; font-size: 2rem;">Search &amp; Jump to Integer</h2>
-      <p style="color: var(--muted); margin-bottom: 1.5rem;">Enter any positive integer to view its comprehensive record:</p>
-      <form onsubmit="jumpToNumber(event)" style="display: flex; gap: 0.5rem; justify-content: center; max-width: 450px; margin: 0 auto;">
-        <input type="number" id="jump-input" min="1" placeholder="e.g. 42" required style="flex: 1;" />
-        <button type="submit" class="btn">Search</button>
+    <div class="card">
+      <h1>Explore Any Positive Integer</h1>
+      <p>Enter any positive integer—small, large, or hundreds of digits long—to compute prime factors, divisors, base representations, and globally synced community facts.</p>
+      
+      <form id="lookup-form" class="search-row" onsubmit="handleLookup(event)">
+        <input 
+          type="text" 
+          id="num-input" 
+          inputmode="numeric" 
+          placeholder="e.g. 42, 1729, or 170141183460469231731687303715884105727" 
+          autocomplete="off"
+          required 
+        />
+        <button type="submit" class="btn">Inspect Number</button>
+        <button type="button" class="btn btn-secondary" onclick="openRandom()">Random</button>
       </form>
+      <div id="lookup-error" class="error-msg">Please enter a valid positive integer (digits 0–9 only, starting with 1–9).</div>
+
+      <div class="quick-tags">
+        <span style="color: var(--muted); font-size: 0.85rem; align-self: center;">Notable:</span>
+        <a class="tag" href="/number.html?n=1">1 (Unit)</a>
+        <a class="tag" href="/number.html?n=2">2 (Even Prime)</a>
+        <a class="tag" href="/number.html?n=6">6 (Perfect)</a>
+        <a class="tag" href="/number.html?n=42">42</a>
+        <a class="tag" href="/number.html?n=1729">1,729 (Taxicab)</a>
+        <a class="tag" href="/number.html?n=8128">8,128 (Perfect)</a>
+        <a class="tag" href="/number.html?n=2147483647">2³¹−1 (Mersenne)</a>
+        <a class="tag" href="/number.html?n=170141183460469231731687303715884105727">2¹²⁷−1 (39-digit Prime)</a>
+      </div>
+    </div>
+
+    <div class="card" id="discovered-section" style="display: none;">
+      <h2>
+        <span>Community Requested &amp; Indexed Numbers</span>
+        <span id="discovered-count" class="pill">0 indexed</span>
+      </h2>
+      <p style="font-size: 0.9rem;">Every number requested across NumVault is automatically indexed in sorted order.</p>
+      <div id="discovered-grid" class="grid"></div>
     </div>
 
     <div class="card">
-      <h2>Quick Catalog Directory</h2>
-      <p style="color: var(--muted); font-size: 0.9rem;">Quick links to numbers 1 through 100:</p>
-      <ul style="display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 0.5rem; list-style: none; padding: 0; margin-top: 1rem;">
-        <script>
-          for (let i = 1; i <= 100; i++) {
-            document.write(`<li><a href="/number.html?n=${i}" style="display: block; background: #111318; border: 1px solid var(--border); padding: 0.5rem; text-align: center; border-radius: 4px; color: var(--accent); text-decoration: none; font-variant-numeric: tabular-nums;">${i}</a></li>`);
-          }
-        </script>
-      </ul>
+      <h2>
+        <span>Base Catalog (1 – 100)</span>
+        <span class="pill">100 integers</span>
+      </h2>
+      <div id="base-grid" class="grid"></div>
     </div>
 
     <footer class="site-footer">
       <span>NumVault &copy; 2026</span>
-      <span style="color: var(--muted);">Pure Positive Integer Database</span>
+      <span id="catalog-status" style="color: var(--muted);">Syncing index...</span>
     </footer>
   </div>
 
   <script>
-    function jumpToNumber(e) {
+    function formatCompactNumber(rawStr) {
+      if (rawStr.length <= 14) {
+        return rawStr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+      return `${rawStr.slice(0, 6)}…${rawStr.slice(-4)} (${rawStr.length}d)`;
+    }
+
+    function handleLookup(e) {
       e.preventDefault();
-      const num = document.getElementById('jump-input').value;
-      if (num && parseInt(num, 10) >= 1) {
-        window.location.href = '/number.html?n=' + parseInt(num, 10);
+      const inputEl = document.getElementById("num-input");
+      const errEl = document.getElementById("lookup-error");
+      // Strip commas or spaces if pasted
+      const cleaned = inputEl.value.replace(/[\s,]/g, "").trim();
+
+      if (!/^[1-9][0-9]*$/.test(cleaned)) {
+        errEl.style.display = "block";
+        return;
+      }
+
+      errEl.style.display = "none";
+      window.location.href = `/number.html?n=${cleaned}`;
+    }
+
+    function openRandom() {
+      const randomNum = Math.floor(Math.random() * 1000000) + 1;
+      window.location.href = `/number.html?n=${randomNum}`;
+    }
+
+    function renderBaseCatalog() {
+      const grid = document.getElementById("base-grid");
+      let html = "";
+      for (let i = 1; i <= 100; i++) {
+        html += `<a class="num-tile" href="/number.html?n=${i}">${i}</a>`;
+      }
+      grid.innerHTML = html;
+    }
+
+    async function loadGlobalIndex() {
+      const statusEl = document.getElementById("catalog-status");
+      const sectionEl = document.getElementById("discovered-section");
+      const gridEl = document.getElementById("discovered-grid");
+      const countEl = document.getElementById("discovered-count");
+
+      try {
+        const res = await fetch("/api/index");
+        if (!res.ok) throw new Error("Index fetch failed");
+        const indexedNumbers = await res.json();
+
+        if (Array.isArray(indexedNumbers) && indexedNumbers.length > 0) {
+          // Sort numerically using BigInt so huge numbers order accurately
+          indexedNumbers.sort((a, b) => {
+            const ba = BigInt(a), bb = BigInt(b);
+            return ba < bb ? -1 : ba > bb ? 1 : 0;
+          });
+
+          sectionEl.style.display = "block";
+          countEl.textContent = `${indexedNumbers.length.toLocaleString()} indexed`;
+
+          gridEl.innerHTML = indexedNumbers.map(numStr => {
+            const label = formatCompactNumber(numStr);
+            return `<a class="num-tile discovered" href="/number.html?n=${numStr}" title="${numStr}">${label}</a>`;
+          }).join("");
+
+          statusEl.textContent = `Global Index: ${indexedNumbers.length.toLocaleString()} numbers synced`;
+        } else {
+          statusEl.textContent = "Global Index: Ready";
+        }
+      } catch (err) {
+        statusEl.textContent = "Catalog Ready (Offline / Local Mode)";
       }
     }
+
+    renderBaseCatalog();
+    loadGlobalIndex();
   </script>
 </body>
 </html>
