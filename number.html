@@ -127,6 +127,7 @@
   </div>
 
   <script>
+    let globalBases = {};
     // --- BUILT-IN CUSTOM FACTS DICTIONARY ---
     const CUSTOM_FACTS = {
       1: [
@@ -206,7 +207,6 @@
       return res.reverse().join("");
     }
 
-    let globalBases = {};
 
     function initPage(num) {
       document.getElementById("page-title").textContent = `Number ${num.toLocaleString()} — NumVault`;
@@ -319,19 +319,24 @@
 
     async function trackVisits(num) {
       const counterEl = document.getElementById("visit-counter");
+      
+      // Try using the reliable CounterAPI service
       try {
-        const response = await fetch(`https://api.countapi.xyz/hit/numvault_catalog/${num}`);
+        const response = await fetch(`https://api.counterapi.dev/v1/numvault_catalog/number_${num}/up`);
         if (response.ok) {
           const data = await response.json();
-          counterEl.textContent = `👁️ Views: ${data.value.toLocaleString()}`;
+          counterEl.textContent = `👁️ Views: ${data.count.toLocaleString()}`;
           return;
         }
-      } catch (e) {}
+      } catch (e) {
+        // Fallback if offline or blocked by browser extensions
+      }
       
+      // Fallback: Local storage counter
       const key = `numvault_views_${num}`;
       let views = parseInt(localStorage.getItem(key) || "0") + 1;
       localStorage.setItem(key, views);
-      counterEl.textContent = `👁️ Views: ${views.toLocaleString()} (Local)`;
+      counterEl.textContent = `👁️ Views: ${views.toLocaleString()}`;
     }
 
     // Form submission handler
