@@ -38,7 +38,7 @@
     input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
     .nav-links { display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 0.9rem; }
     .nav-links a { color: var(--accent); text-decoration: none; }
-    .btn { background: var(--accent); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: 600; cursor: pointer; width: auto; }
+    .btn { background: var(--accent); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: 600; cursor: pointer; width: auto; text-decoration: none; display: inline-block; }
     .btn:hover { opacity: 0.9; }
     ul li { margin-bottom: 0.5rem; }
   </style>
@@ -144,14 +144,14 @@
       ]
     };
 
-    // Extract number from URL path (e.g., /numbers/42 -> 42)
-    const pathSegments = window.location.pathname.split("/").filter(Boolean);
-    const rawNum = pathSegments[pathSegments.length - 1].replace(".html", "");
+    // Extract number from query parameter (e.g. /number.html?n=42 -> 42)
+    const urlParams = new URLSearchParams(window.location.search);
+    const rawNum = urlParams.get('n');
     const n = parseInt(rawNum, 10);
 
     if (isNaN(n) || n < 1) {
       document.getElementById("num-heading").textContent = "Invalid Number";
-      document.body.innerHTML = "<div class='container'><div class='card'><h2>Error</h2><p>Please provide a valid positive integer.</p><p><a href='/index.html'>Return to Index</a></p></div></div>";
+      document.body.innerHTML = "<div class='container'><div class='card'><h2>Error</h2><p>Please provide a valid positive integer via query parameter (e.g. <code>/number.html?n=42</code>).</p><p><a href='/index.html'>Return to Index</a></p></div></div>";
     } else {
       initPage(n);
     }
@@ -211,10 +211,10 @@
     function initPage(num) {
       document.getElementById("page-title").textContent = `Number ${num.toLocaleString()} — NumVault`;
       document.getElementById("num-heading").textContent = num.toLocaleString();
-      document.getElementById("prev-link").href = num > 1 ? `/numbers/${num - 1}` : "#";
-      document.getElementById("next-link").href = `/numbers/${num + 1}`;
+      document.getElementById("prev-link").href = num > 1 ? `/number.html?n=${num - 1}` : "#";
+      document.getElementById("next-link").href = `/number.html?n=${num + 1}`;
 
-      // Set form hidden value
+      // Set form hidden value & labels
       document.getElementById("form-num-label").textContent = num.toLocaleString();
       document.getElementById("hidden-number-input").value = num;
 
@@ -282,7 +282,6 @@
       let factsList = document.getElementById("facts-list");
       let factsHtml = "";
 
-      // 1. Check built-in or fetched facts.json
       if (CUSTOM_FACTS[num]) {
         factsHtml += CUSTOM_FACTS[num].map(fact => `<li>${fact}</li>`).join("");
       }
@@ -297,7 +296,6 @@
         }
       } catch (e) {}
 
-      // 2. Mathematical fallback properties
       let mathFacts = "";
       let sqrtN = Math.sqrt(num);
       if (num > 1 && Number.isInteger(sqrtN)) {
@@ -340,6 +338,7 @@
     document.getElementById("fact-form").addEventListener("submit", async function(e) {
       e.preventDefault();
       
+      // Paste your Google Apps Script Web App URL here when ready:
       const WEB_APP_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
       const currentNum = document.getElementById("hidden-number-input").value;
       const factText = document.getElementById("fact-text").value;
@@ -366,13 +365,12 @@
         successDiv.innerHTML = `
           Thank you! Your fact has been logged for number <strong>#${parseInt(currentNum).toLocaleString()}</strong>. 
           <br><br>
-          <a href="/numbers/${currentNum}" class="btn" style="display: inline-block; text-decoration: none; font-size: 0.9rem;">
+          <a href="/number.html?n=${currentNum}" class="btn">
             &larr; Return to Record
           </a>
         `;
         successDiv.style.display = "block";
 
-        // Instantly append to list
         const factsList = document.getElementById("facts-list");
         const newLi = document.createElement("li");
         newLi.innerHTML = `${newFactString} 🌟 <small style="color: var(--accent);">(Just Added)</small>`;
