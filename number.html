@@ -377,7 +377,76 @@
       document.getElementById("val-custom-base").textContent = globalBases[b];
     }
 
-    async function loadFacts(num, rawStr, complete, factors) {
+	// Exact floor(n^(1/k)) for arbitrary-precision BigInt via binary search
+    function iRoot(n, k) {
+      if (n < 0n) throw new Error("Negative root");
+      if (n < 2n) return n;
+      const bitLen = BigInt(n.toString(2).length);
+      let low = 1n << ((bitLen - 1n) / BigInt(k));
+      let high = (1n << ((bitLen + BigInt(k) - 1n) / BigInt(k))) + 1n;
+
+      while (low <= high) {
+        const mid = (low + high) >> 1n;
+        const p = mid ** BigInt(k);
+        if (p === n) return mid;
+        if (p < n) low = mid + 1n;
+        else high = mid - 1n;
+      }
+      return high;
+    }
+
+    function isPerfectSquareBigInt(n) {
+      if (n < 0n) return false;
+      const r = iRoot(n, 2);
+      return r * r === n;
+    }
+
+    // Detects Mersenne numbers (2^p - 1), perfect powers (a^b), and Fibonacci numbers
+    function detectSpecialClasses(num, isPrime) {
+      const classes = [];
+      if (num <= 1n) return classes;
+
+      // 1. Mersenne Number Check: n = 2^k - 1  <=>  (n + 1) is a power of 2
+      const plusOne = num + 1n;
+      if ((plusOne & (plusOne - 1n)) === 0n) {
+        const exp = plusOne.toString(2).length - 1;
+        if (exp >= 2) {
+          const label = isPrime
+            ? `<strong>Mersenne Prime</strong> (2<sup>${exp}</sup> &minus; 1)`
+            : `<strong>Mersenne Number</strong> (2<sup>${exp}</sup> &minus; 1)`;
+          classes.push(label);
+        }
+      }
+
+      // 2. Perfect Power Check: n = a^b for highest integer exponent b >= 2
+      const maxExp = num.toString(2).length;
+      for (let b = maxExp; b >= 2; b--) {
+        const a = iRoot(num, b);
+        if (a >= 2n && (a ** BigInt(b)) === num) {
+          const typeName = b === 2 ? "Perfect Square" : b === 3 ? "Perfect Cube" : `Perfect ${b}th Power`;
+          classes.push(`<strong>${typeName}</strong> (${formatBigInt(a)}<sup>${b}</sup>)`);
+          break; // Report the highest exponent representation (e.g., 64 = 2^6)
+        }
+      }
+
+      // 3. Fibonacci Number Check: 5n^2 + 4 or 5n^2 - 4 is a perfect square
+      const fiveNSq = 5n * num * num;
+      if (isPerfectSquareBigInt(fiveNSq + 4n) || isPerfectSquareBigInt(fiveNSq - 4n)) {
+        // Compute Fibonacci index F_k
+        let a = 0n, b = 1n, idx = 1;
+        while (b < num) {
+          const next = a + b;
+          a = b;
+          b = next;
+          idx++;
+        }
+        const indexNote = num === 1n ? "F₁ / F₂" : `F<sub>${idx}</sub>`;
+        classes.push(`<strong>Fibonacci Number</strong> (${indexNote})`);
+      }
+
+      return classes;
+    }
+  async function loadFacts(num, rawStr, complete, factors, isPrime = false) {
       const factsList = document.getElementById("facts-list");
       let factsHtml = "";
 
@@ -395,14 +464,19 @@
         }
       } catch (e) {}
 
-      let mathFacts = `<li>Digit length: <strong>${rawStr.length.toLocaleString()}</strong> decimal ${rawStr.length === 1 ? "digit" : "digits"} (${toBaseBigInt(num, 2).length.toLocaleString()} bits).</li>`;
+      let mathFacts = "";
 
-      if (complete && factors.length > 0 && factors.every(([, e]) => e % 2 === 0)) {
-        mathFacts += `<li>Perfect square.</li>`;
+      // Automatic special number class detections
+      const detectedClasses = detectSpecialClasses(num, isPrime);
+      for (const cls of detectedClasses) {
+        mathFacts += `<li>Special Class: ${cls}</li>`;
       }
+
+      mathFacts += `<li>Digit length: <strong>${rawStr.length.toLocaleString()}</strong> decimal ${rawStr.length === 1 ? "digit" : "digits"} (${toBaseBigInt(num, 2).length.toLocaleString()} bits).</li>`;
 
       factsList.innerHTML = factsHtml + mathFacts;
     }
+
 
     async function trackVisits(rawStr) {
       const counterEl = document.getElementById("visit-counter");
