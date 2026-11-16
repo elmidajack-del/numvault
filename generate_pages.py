@@ -5,7 +5,6 @@ import math
 START_NUM = 1
 END_NUM = 1000
 OUTPUT_DIR = "numbers"
-DOMAIN_URL = "https://numvault.pages.dev"  # Update to your live domain
 
 # --- CUSTOM FACTS TEMPLATE DICTIONARY ---
 CUSTOM_FACTS = {
@@ -163,7 +162,7 @@ def render_site_shell(title: str, description: str, body_content: str) -> str:
 <body>
   <div class="container">
     <header class="site-header">
-      <a href="../index.html">NumVault 🗄️</a>
+      <a href="/index.html">NumVault 🗄️</a>
       <span style="color: var(--muted); font-size: 0.9rem;">Pure Integer Catalog</span>
     </header>
 
@@ -205,8 +204,9 @@ def build_number_page(n: int, start: int, end: int) -> str:
     badge_text, badge_bg, badge_color = get_classification(n, factors)
     facts = get_facts_for_number(n, divisors)
     
-    prev_link = f'<a href="{n-1}.html">&larr; {n-1:,}</a>' if n > start else '<span>&larr; Prev</span>'
-    next_link = f'<a href="{n+1}.html">{n+1:,} &rarr;</a>' if n < end else '<span>Next &rarr;</span>'
+    # Absolute-from-root paths ensure correct navigation regardless of current folder depth
+    prev_link = f'<a href="/numbers/{n-1}.html">&larr; {n-1:,}</a>' if n > start else '<span>&larr; Prev</span>'
+    next_link = f'<a href="/numbers/{n+1}.html">{n+1:,} &rarr;</a>' if n < end else '<span>Next &rarr;</span>'
     
     divisors_display = divisors[:100] if len(divisors) > 100 else divisors
     divisors_str = ", ".join(map(str, divisors_display))
@@ -220,7 +220,7 @@ def build_number_page(n: int, start: int, end: int) -> str:
     content = f"""
     <div class="nav-links">
       {prev_link}
-      <a href="../index.html">Index</a>
+      <a href="/index.html">Index</a>
       {next_link}
     </div>
 
@@ -291,7 +291,7 @@ def build_index_page(start: int, end: int) -> str:
       <h2>Quick Catalog Directory</h2>
       <p style="color: var(--muted); font-size: 0.9rem;">Quick links to numbers {start:,} through {end:,}:</p>
       <ul style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem; list-style: none; padding: 0; margin-top: 1rem;">
-        {"".join(f'<li><a href="numbers/{n}.html" style="display: block; background: #111318; border: 1px solid var(--border); padding: 0.5rem; text-align: center; border-radius: 4px; color: var(--accent); text-decoration: none;">{n:,}</a></li>' for n in range(start, min(start + 300, end + 1)))}
+        {"".join(f'<li><a href="/numbers/{n}.html" style="display: block; background: #111318; border: 1px solid var(--border); padding: 0.5rem; text-align: center; border-radius: 4px; color: var(--accent); text-decoration: none;">{n:,}</a></li>' for n in range(start, min(start + 300, end + 1)))}
       </ul>
     </div>
 
@@ -300,7 +300,7 @@ def build_index_page(start: int, end: int) -> str:
         e.preventDefault();
         const num = document.getElementById('jump-input').value;
         if (num) {{
-          window.location.href = 'numbers/' + num + '.html';
+          window.location.href = '/numbers/' + num + '.html';
         }}
       }}
     </script>
@@ -335,14 +335,11 @@ def build_index_page(start: int, end: int) -> str:
 """
 
 def generate_sitemap(start: int, end: int) -> str:
-    """Generates an XML sitemap for search engines (Google, Bing) to index every page."""
-    urls = []
-    urls.append(f"<url><loc>{DOMAIN_URL}/index.html</loc><priority>1.0</priority></url>")
+    domain = "https://numvault.pages.dev"
+    urls = [f"<url><loc>{domain}/index.html</loc><priority>1.0</priority></url>"]
     for n in range(start, end + 1):
-        urls.append(f"<url><loc>{DOMAIN_URL}/numbers/{n}.html</loc><priority>0.8</priority></url>")
-    
-    urlset = "".join(urls)
-    return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{urlset}\n</urlset>'
+        urls.append(f"<url><loc>{domain}/numbers/{n}.html</loc><priority>0.8</priority></url>")
+    return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{"".join(urls)}\n</urlset>'
 
 def main():
     nums_dir = OUTPUT_DIR
@@ -353,15 +350,13 @@ def main():
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(build_number_page(n, START_NUM, END_NUM))
             
-    # Generate index.html
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(build_index_page(START_NUM, END_NUM))
         
-    # Generate sitemap.xml for public search indexing
     with open("sitemap.xml", "w", encoding="utf-8") as f:
         f.write(generate_sitemap(START_NUM, END_NUM))
         
-    print(f"Generated public site with sitemap.xml and search box for range {START_NUM:,} to {END_NUM:,}!")
+    print(f"Generated clean absolute paths for range {START_NUM:,} to {END_NUM:,}!")
 
 if __name__ == "__main__":
     main()
