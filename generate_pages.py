@@ -204,7 +204,7 @@ def build_number_page(n: int, start: int, end: int) -> str:
     badge_text, badge_bg, badge_color = get_classification(n, factors)
     facts = get_facts_for_number(n, divisors)
     
-    # Absolute-from-root paths ensure correct navigation regardless of current folder depth
+    # Absolute root paths prevent directory nesting bugs
     prev_link = f'<a href="/numbers/{n-1}.html">&larr; {n-1:,}</a>' if n > start else '<span>&larr; Prev</span>'
     next_link = f'<a href="/numbers/{n+1}.html">{n+1:,} &rarr;</a>' if n < end else '<span>Next &rarr;</span>'
     
@@ -335,7 +335,7 @@ def build_index_page(start: int, end: int) -> str:
 """
 
 def generate_sitemap(start: int, end: int) -> str:
-    domain = "https://numvault.pages.dev"
+    domain = "https://numvault1.pages.dev"
     urls = [f"<url><loc>{domain}/index.html</loc><priority>1.0</priority></url>"]
     for n in range(start, end + 1):
         urls.append(f"<url><loc>{domain}/numbers/{n}.html</loc><priority>0.8</priority></url>")
@@ -356,7 +356,7 @@ def main():
     with open("sitemap.xml", "w", encoding="utf-8") as f:
         f.write(generate_sitemap(START_NUM, END_NUM))
         
-    print(f"Generated clean absolute paths for range {START_NUM:,} to {END_NUM:,}!")
+    print(f"Generated clean absolute root paths for range {START_NUM:,} to {END_NUM:,}!")
 
 if __name__ == "__main__":
     main()
