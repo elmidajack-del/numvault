@@ -17,7 +17,7 @@
       background: var(--bg); color: var(--text); 
       margin: 0; padding: 2rem 1rem; line-height: 1.6; 
     }
-    .container { max-width: 900px; margin: 0 auto; }
+    .container { max-width: 920px; margin: 0 auto; }
     header.site-header { 
       display: flex; justify-content: space-between; align-items: center; 
       margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); 
@@ -29,25 +29,27 @@
       border-radius: 8px; padding: 1.5rem; margin-bottom: 1.25rem; 
     }
     h1 { margin: 0 0 0.4rem 0; font-size: 2.1rem; }
-    h2 { margin: 0 0 0.75rem 0; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+    h2 { margin: 0 0 0.75rem 0; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
     p { margin: 0 0 1rem 0; color: var(--muted); }
     .search-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
-    input[type="text"] { 
-      flex: 1; min-width: 240px; background: #111318; color: var(--text); 
-      border: 1px solid var(--border); padding: 0.65rem 0.9rem; 
-      border-radius: 6px; font-size: 1rem; font-family: ui-monospace, monospace;
+    input[type="text"], select { 
+      background: #111318; color: var(--text); 
+      border: 1px solid var(--border); padding: 0.6rem 0.85rem; 
+      border-radius: 6px; font-size: 0.95rem;
     }
-    input[type="text"]:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    input[type="text"] { flex: 1; min-width: 240px; font-family: ui-monospace, monospace; }
+    input[type="text"]:focus, select:focus { outline: 2px solid var(--accent); border-color: transparent; }
     .btn { 
       background: var(--accent); color: #fff; border: none; 
-      padding: 0.65rem 1.2rem; border-radius: 6px; font-weight: 600; 
-      font-size: 0.95rem; cursor: pointer; text-decoration: none; display: inline-block;
+      padding: 0.6rem 1.15rem; border-radius: 6px; font-weight: 600; 
+      font-size: 0.92rem; cursor: pointer; text-decoration: none; display: inline-block;
     }
     .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-secondary {
       background: #232833; color: var(--text); border: 1px solid var(--border);
     }
-    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); opacity: 1; }
+    .btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); opacity: 1; }
     .quick-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem; }
     .tag {
       background: #111318; border: 1px solid var(--border); color: var(--text);
@@ -55,16 +57,67 @@
       text-decoration: none; font-family: ui-monospace, monospace;
     }
     .tag:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Group Filter Tabs */
+    .filter-section-label {
+      font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--muted); margin-bottom: 0.45rem; font-weight: 600;
+    }
+    .group-tabs {
+      display: flex; flex-wrap: wrap; gap: 0.45rem;
+      margin-bottom: 0.9rem; padding-bottom: 0.9rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .group-tab {
+      background: #111318; color: var(--muted); border: 1px solid var(--border);
+      padding: 0.42rem 0.8rem; border-radius: 6px; font-size: 0.86rem;
+      font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;
+    }
+    .group-tab:hover { border-color: var(--accent); color: var(--text); }
+    .group-tab.active {
+      background: #1a2438; border-color: var(--accent); color: var(--accent);
+    }
+
+    /* Mathematical Class Filter Pills */
+    .class-pills {
+      display: flex; flex-wrap: wrap; gap: 0.45rem;
+      margin-bottom: 1.15rem; padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .class-pill {
+      background: #111318; color: var(--muted); border: 1px solid var(--border);
+      padding: 0.35rem 0.78rem; border-radius: 999px; font-size: 0.84rem;
+      font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;
+    }
+    .class-pill:hover { border-color: #4ade80; color: var(--text); }
+    .class-pill.active {
+      background: #182b24; border-color: #4ade80; color: #4ade80;
+    }
+    .tab-count {
+      background: #0f1115; padding: 0.08rem 0.45rem; border-radius: 999px;
+      font-size: 0.76rem; color: var(--text);
+    }
+
+    /* Pagination Bar */
+    .pagination-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 0.75rem; margin-top: 1.15rem; padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .page-controls { display: flex; align-items: center; gap: 0.5rem; }
+    .page-info { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+
+    /* Number Grid */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
       gap: 0.55rem;
     }
     .num-tile {
       display: block; background: #111318; border: 1px solid var(--border);
       border-radius: 6px; padding: 0.55rem 0.5rem; text-align: center;
       color: var(--text); text-decoration: none; font-weight: 600;
-      font-variant-numeric: tabular-nums; font-size: 0.95rem;
+      font-variant-numeric: tabular-nums; font-size: 0.93rem;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .num-tile:hover { border-color: var(--accent); color: var(--accent); background: #151922; }
@@ -72,6 +125,10 @@
     .pill {
       font-size: 0.8rem; font-weight: 500; color: var(--accent);
       background: #1a2438; padding: 0.15rem 0.55rem; border-radius: 999px;
+    }
+    .empty-state {
+      text-align: center; padding: 2rem 1rem; color: var(--muted);
+      background: #111318; border: 1px dashed var(--border); border-radius: 6px;
     }
     .error-msg { color: #f87171; font-size: 0.88rem; margin-top: 0.5rem; display: none; }
     footer.site-footer { 
@@ -90,7 +147,7 @@
 
     <div class="card">
       <h1>Explore Any Positive Integer</h1>
-      <p>Enter any positive integer—small, large, or hundreds of digits long—to compute prime factors, divisors, base representations, and globally synced community facts.</p>
+      <p>Enter any positive integer—small, large, or hundreds of digits long—to compute primality, prime factors, base representations, and globally synced community facts.</p>
       
       <form id="lookup-form" class="search-row" onsubmit="handleLookup(event)">
         <input 
@@ -119,21 +176,74 @@
       </div>
     </div>
 
-    <div class="card" id="discovered-section" style="display: none;">
-      <h2>
-        <span>Community Requested &amp; Indexed Numbers</span>
-        <span id="discovered-count" class="pill">0 indexed</span>
-      </h2>
-      <p style="font-size: 0.9rem;">Every number requested across NumVault is automatically indexed in sorted order.</p>
-      <div id="discovered-grid" class="grid"></div>
-    </div>
-
     <div class="card">
       <h2>
-        <span>Base Catalog (1 – 100)</span>
-        <span class="pill">100 integers</span>
+        <span>Indexed Number Directory</span>
+        <span id="total-indexed-pill" class="pill">100 total</span>
       </h2>
-      <div id="base-grid" class="grid"></div>
+
+      <!-- Scale / Magnitude Groups -->
+      <div class="filter-section-label">Scale &amp; Origin</div>
+      <div class="group-tabs" id="group-tabs">
+        <button type="button" class="group-tab active" data-group="all" onclick="setGroup('all')">
+          All Numbers <span class="tab-count" id="count-all">0</span>
+        </button>
+        <button type="button" class="group-tab" data-group="small" onclick="setGroup('small')">
+          Small (1–3d) <span class="tab-count" id="count-small">0</span>
+        </button>
+        <button type="button" class="group-tab" data-group="medium" onclick="setGroup('medium')">
+          Medium (4–10d) <span class="tab-count" id="count-medium">0</span>
+        </button>
+        <button type="button" class="group-tab" data-group="large" onclick="setGroup('large')">
+          Large (11–30d) <span class="tab-count" id="count-large">0</span>
+        </button>
+        <button type="button" class="group-tab" data-group="huge" onclick="setGroup('huge')">
+          Huge (31+d) <span class="tab-count" id="count-huge">0</span>
+        </button>
+        <button type="button" class="group-tab" data-group="community" onclick="setGroup('community')">
+          Community Requested <span class="tab-count" id="count-community">0</span>
+        </button>
+      </div>
+
+      <!-- Mathematical Class Filter Pills -->
+      <div class="filter-section-label">Mathematical Class</div>
+      <div class="class-pills" id="class-pills">
+        <button type="button" class="class-pill active" data-class="any" onclick="setMathClass('any')">
+          Any Class <span class="tab-count" id="class-count-any">0</span>
+        </button>
+        <button type="button" class="class-pill" data-class="prime" onclick="setMathClass('prime')">
+          Primes <span class="tab-count" id="class-count-prime">0</span>
+        </button>
+        <button type="button" class="class-pill" data-class="mersenne" onclick="setMathClass('mersenne')">
+          Mersenne (2ᵏ−1) <span class="tab-count" id="class-count-mersenne">0</span>
+        </button>
+        <button type="button" class="class-pill" data-class="fibonacci" onclick="setMathClass('fibonacci')">
+          Fibonacci <span class="tab-count" id="class-count-fibonacci">0</span>
+        </button>
+        <button type="button" class="class-pill" data-class="power" onclick="setMathClass('power')">
+          Perfect Powers (aᵇ) <span class="tab-count" id="class-count-power">0</span>
+        </button>
+      </div>
+
+      <!-- Paginated Grid -->
+      <div id="catalog-grid" class="grid"></div>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" id="pagination-bar">
+        <div class="page-controls">
+          <button type="button" class="btn btn-secondary" id="prev-page-btn" onclick="changePage(-1)">&larr; Prev</button>
+          <span class="page-info" id="page-indicator">Page 1 of 1</span>
+          <button type="button" class="btn btn-secondary" id="next-page-btn" onclick="changePage(1)">Next &rarr;</button>
+        </div>
+        <div class="page-controls">
+          <label for="page-size-select" style="color: var(--muted); font-size: 0.88rem;">Per page:</label>
+          <select id="page-size-select" onchange="changePageSize()">
+            <option value="50">50</option>
+            <option value="100" selected>100</option>
+            <option value="250">250</option>
+          </select>
+        </div>
+      </div>
     </div>
 
     <footer class="site-footer">
@@ -143,6 +253,14 @@
   </div>
 
   <script>
+    let allNumbers = [];
+    let communitySet = new Set();
+    let classCache = new Map(); // numStr -> { prime, mersenne, fibonacci, power }
+    let currentGroup = "all";
+    let currentMathClass = "any";
+    let currentPage = 1;
+    let pageSize = 100;
+
     function formatCompactNumber(rawStr) {
       if (rawStr.length <= 14) {
         return rawStr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -154,7 +272,6 @@
       e.preventDefault();
       const inputEl = document.getElementById("num-input");
       const errEl = document.getElementById("lookup-error");
-      // Strip commas or spaces if pasted
       const cleaned = inputEl.value.replace(/[\s,]/g, "").trim();
 
       if (!/^[1-9][0-9]*$/.test(cleaned)) {
@@ -171,52 +288,232 @@
       window.location.href = `/number.html?n=${randomNum}`;
     }
 
-    function renderBaseCatalog() {
-      const grid = document.getElementById("base-grid");
-      let html = "";
-      for (let i = 1; i <= 100; i++) {
-        html += `<a class="num-tile" href="/number.html?n=${i}">${i}</a>`;
+    // BigInt Math Helpers for Class Filtering
+    function modPow(base, exp, mod) {
+      let result = 1n;
+      base %= mod;
+      while (exp > 0n) {
+        if (exp & 1n) result = (result * base) % mod;
+        exp >>= 1n;
+        base = (base * base) % mod;
       }
-      grid.innerHTML = html;
+      return result;
     }
 
-    async function loadGlobalIndex() {
+    function isProbablePrime(n) {
+      if (n < 2n) return false;
+      if (n === 2n || n === 3n || n === 5n) return true;
+      if (n % 2n === 0n || n % 3n === 0n || n % 5n === 0n) return false;
+
+      const smallPrimes = [7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n, 41n, 43n, 47n];
+      for (const p of smallPrimes) {
+        if (n === p) return true;
+        if (n % p === 0n) return false;
+      }
+
+      let d = n - 1n, r = 0n;
+      while ((d & 1n) === 0n) { d >>= 1n; r++; }
+
+      const witnesses = [2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n];
+      for (const a of witnesses) {
+        if (a >= n) break;
+        let x = modPow(a, d, n);
+        if (x === 1n || x === n - 1n) continue;
+        let comp = true;
+        for (let i = 1n; i < r; i++) {
+          x = (x * x) % n;
+          if (x === n - 1n) { comp = false; break; }
+        }
+        if (comp) return false;
+      }
+      return true;
+    }
+
+    function iRoot(n, k) {
+      if (n < 2n) return n;
+      const bitLen = BigInt(n.toString(2).length);
+      let low = 1n << ((bitLen - 1n) / BigInt(k));
+      let high = (1n << ((bitLen + BigInt(k) - 1n) / BigInt(k))) + 1n;
+      while (low <= high) {
+        const mid = (low + high) >> 1n;
+        const p = mid ** BigInt(k);
+        if (p === n) return mid;
+        if (p < n) low = mid + 1n;
+        else high = mid - 1n;
+      }
+      return high;
+    }
+
+    function isPerfectSquare(n) {
+      if (n < 0n) return false;
+      const r = iRoot(n, 2);
+      return r * r === n;
+    }
+
+    function isPerfectPower(n) {
+      if (n < 4n) return false;
+      const maxExp = n.toString(2).length;
+      for (let b = 2; b <= maxExp; b++) {
+        const a = iRoot(n, b);
+        if (a >= 2n && (a ** BigInt(b)) === n) return true;
+      }
+      return false;
+    }
+
+    function classifyNumber(rawStr) {
+      if (classCache.has(rawStr)) return classCache.get(rawStr);
+      const n = BigInt(rawStr);
+      const plusOne = n + 1n;
+      const fiveNSq = 5n * n * n;
+
+      const info = {
+        prime: isProbablePrime(n),
+        mersenne: n >= 3n && ((plusOne & (plusOne - 1n)) === 0n),
+        fibonacci: isPerfectSquare(fiveNSq + 4n) || isPerfectSquare(fiveNSq - 4n),
+        power: isPerfectPower(n)
+      };
+      classCache.set(rawStr, info);
+      return info;
+    }
+
+    function matchesGroup(numStr, group) {
+      const len = numStr.length;
+      if (group === "all") return true;
+      if (group === "small") return len >= 1 && len <= 3;
+      if (group === "medium") return len >= 4 && len <= 10;
+      if (group === "large") return len >= 11 && len <= 30;
+      if (group === "huge") return len >= 31;
+      if (group === "community") return communitySet.has(numStr);
+      return true;
+    }
+
+    function matchesMathClass(numStr, mathClass) {
+      if (mathClass === "any") return true;
+      const info = classifyNumber(numStr);
+      return Boolean(info[mathClass]);
+    }
+
+    function updateFilterCounts() {
+      // Scale / origin counts
+      document.getElementById("count-all").textContent = allNumbers.length.toLocaleString();
+      document.getElementById("count-small").textContent = allNumbers.filter(n => matchesGroup(n, "small")).length.toLocaleString();
+      document.getElementById("count-medium").textContent = allNumbers.filter(n => matchesGroup(n, "medium")).length.toLocaleString();
+      document.getElementById("count-large").textContent = allNumbers.filter(n => matchesGroup(n, "large")).length.toLocaleString();
+      document.getElementById("count-huge").textContent = allNumbers.filter(n => matchesGroup(n, "huge")).length.toLocaleString();
+      document.getElementById("count-community").textContent = communitySet.size.toLocaleString();
+      document.getElementById("total-indexed-pill").textContent = `${allNumbers.length.toLocaleString()} indexed`;
+
+      // Mathematical class counts scoped to currently selected scale group
+      const inCurrentGroup = allNumbers.filter(n => matchesGroup(n, currentGroup));
+      document.getElementById("class-count-any").textContent = inCurrentGroup.length.toLocaleString();
+      document.getElementById("class-count-prime").textContent = inCurrentGroup.filter(n => matchesMathClass(n, "prime")).length.toLocaleString();
+      document.getElementById("class-count-mersenne").textContent = inCurrentGroup.filter(n => matchesMathClass(n, "mersenne")).length.toLocaleString();
+      document.getElementById("class-count-fibonacci").textContent = inCurrentGroup.filter(n => matchesMathClass(n, "fibonacci")).length.toLocaleString();
+      document.getElementById("class-count-power").textContent = inCurrentGroup.filter(n => matchesMathClass(n, "power")).length.toLocaleString();
+    }
+
+    function setGroup(group) {
+      currentGroup = group;
+      currentPage = 1;
+      document.querySelectorAll(".group-tab").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.group === group);
+      });
+      updateFilterCounts();
+      renderCatalogPage();
+    }
+
+    function setMathClass(mathClass) {
+      currentMathClass = mathClass;
+      currentPage = 1;
+      document.querySelectorAll(".class-pill").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.class === mathClass);
+      });
+      renderCatalogPage();
+    }
+
+    function changePage(delta) {
+      currentPage += delta;
+      renderCatalogPage();
+      document.getElementById("group-tabs").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function changePageSize() {
+      pageSize = parseInt(document.getElementById("page-size-select").value, 10);
+      currentPage = 1;
+      renderCatalogPage();
+    }
+
+    function renderCatalogPage() {
+      const grid = document.getElementById("catalog-grid");
+      const filtered = allNumbers.filter(
+        n => matchesGroup(n, currentGroup) && matchesMathClass(n, currentMathClass)
+      );
+
+      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const startIdx = (currentPage - 1) * pageSize;
+      const pageItems = filtered.slice(startIdx, startIdx + pageSize);
+
+      if (pageItems.length === 0) {
+        grid.style.display = "block";
+        grid.innerHTML = `<div class="empty-state">No indexed numbers match this combination of filters. Search any integer above to add it!</div>`;
+      } else {
+        grid.style.display = "grid";
+        grid.innerHTML = pageItems.map(numStr => {
+          const label = formatCompactNumber(numStr);
+          const isCommunity = communitySet.has(numStr);
+          return `<a class="num-tile ${isCommunity ? "discovered" : ""}" href="/number.html?n=${numStr}" title="${numStr}">${label}</a>`;
+        }).join("");
+      }
+
+      document.getElementById("page-indicator").textContent = `Page ${currentPage.toLocaleString()} of ${totalPages.toLocaleString()} (${filtered.length.toLocaleString()} items)`;
+      document.getElementById("prev-page-btn").disabled = currentPage <= 1;
+      document.getElementById("next-page-btn").disabled = currentPage >= totalPages;
+    }
+
+    async function initCatalog() {
       const statusEl = document.getElementById("catalog-status");
-      const sectionEl = document.getElementById("discovered-section");
-      const gridEl = document.getElementById("discovered-grid");
-      const countEl = document.getElementById("discovered-count");
+
+      const mergedSet = new Set();
+      for (let i = 1; i <= 100; i++) {
+        mergedSet.add(String(i));
+      }
 
       try {
         const res = await fetch("/api/index");
         if (!res.ok) throw new Error("Index fetch failed");
         const indexedNumbers = await res.json();
 
-        if (Array.isArray(indexedNumbers) && indexedNumbers.length > 0) {
-          // Sort numerically using BigInt so huge numbers order accurately
-          indexedNumbers.sort((a, b) => {
-            const ba = BigInt(a), bb = BigInt(b);
-            return ba < bb ? -1 : ba > bb ? 1 : 0;
-          });
-
-          sectionEl.style.display = "block";
-          countEl.textContent = `${indexedNumbers.length.toLocaleString()} indexed`;
-
-          gridEl.innerHTML = indexedNumbers.map(numStr => {
-            const label = formatCompactNumber(numStr);
-            return `<a class="num-tile discovered" href="/number.html?n=${numStr}" title="${numStr}">${label}</a>`;
-          }).join("");
-
-          statusEl.textContent = `Global Index: ${indexedNumbers.length.toLocaleString()} numbers synced`;
-        } else {
-          statusEl.textContent = "Global Index: Ready";
+        if (Array.isArray(indexedNumbers)) {
+          for (const raw of indexedNumbers) {
+            if (/^[1-9][0-9]*$/.test(raw)) {
+              mergedSet.add(raw);
+              communitySet.add(raw);
+            }
+          }
+          statusEl.textContent = `Global Index: ${communitySet.size.toLocaleString()} requested numbers synced`;
         }
       } catch (err) {
         statusEl.textContent = "Catalog Ready (Offline / Local Mode)";
       }
+
+      allNumbers = Array.from(mergedSet).sort((a, b) => {
+        const ba = BigInt(a), bb = BigInt(b);
+        return ba < bb ? -1 : ba > bb ? 1 : 0;
+      });
+
+      // Pre-warm classification cache for all indexed BigInts
+      for (const numStr of allNumbers) {
+        classifyNumber(numStr);
+      }
+
+      updateFilterCounts();
+      renderCatalogPage();
     }
 
-    renderBaseCatalog();
-    loadGlobalIndex();
+    initCatalog();
   </script>
 </body>
 </html>
