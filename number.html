@@ -533,6 +533,119 @@
       };
       activeWorker.postMessage(numStr);
     }
+function applyAnalysisResult(num, rawStr, result, sourceLabel = "") {
+      const { factors, complete, skipped, isPrime } = result;
+      const badgeEl = document.getElementById("num-badge");
+
+      if (num === 1n) {
+        badgeEl.textContent = "Unit (Neither Prime nor Composite)";
+        badgeEl.style.background = "#262c38"; badgeEl.style.color = "#4f8cff";
+      } else if (isPrime) {
+        badgeEl.textContent = rawStr.length > 24 ? "Probable Prime" : "Prime";
+        badgeEl.style.background = "#1e3329"; badgeEl.style.color = "#4ade80";
+      } else if (skipped) {
+        badgeEl.textContent = `Composite (${rawStr.length} digits)`;
+        badgeEl.style.background = "#33261e"; badgeEl.style.color = "#fb923c";
+      } else {
+        const totalExp = factors.reduce((acc, f) => acc + f[1], 0);
+        badgeEl.textContent = totalExp === 2 ? "Composite (Semiprime)" : "Composite";
+        badgeEl.style.background = "#33261e"; badgeEl.style.color = "#fb923c";
+      }
+
+      if (sourceLabel) {
+        badgeEl.title = sourceLabel;
+      }
+
+      if (skipped) {
+        document.getElementById("val-factors").innerHTML = `<code>Composite — full prime factorization only computed up to 10 digits</code>`;
+        document.getElementById("val-divisors").innerHTML = `<code>Not listed for numbers &gt; 10 digits</code>`;
+        document.getElementById("val-divcount").textContent = "—";
+        document.getElementById("val-divsum").textContent = "—";
+      } else {
+        let factHtml = "<code>1</code> (Empty product)";
+        if (factors.length > 0) {
+          let parts = factors.map(([b, e]) => e === 1 ? `${formatBigInt(b)}` : `${formatBigInt(b)}<sup>${e}</sup>`);
+          factHtml = `<code>${parts.join(" &times; ")}</code>`;
+        }
+        document.getElementById("val-factors").innerHTML = factHtml;
+
+        // Only enumerate all divisors for numbers up to 10 digits
+        if (rawStr.length > 10) {
+          document.getElementById("val-divisors").innerHTML = isPrime
+            ? `<code>1 and n (trivial divisors only — hidden for numbers &gt; 10 digits)</code>`
+            : `<code>Not listed for numbers &gt; 10 digits</code>`;
+          document.getElementById("val-divcount").textContent = isPrime ? "2" : "—";
+          document.getElementById("val-divsum").textContent = isPrime ? "n + 1" : "—";
+        } else {
+          const divisors = divisorsFromFactors(factors);
+          const divDisplay = divisors.length > 100
+            ? divisors.slice(0, 100).map(formatBigInt).join(", ") + ` ... (showing 100 of ${divisors.length.toLocaleString()})`
+            : divisors.map(formatBigInt).join(", ");
+          document.getElementById("val-divisors").innerHTML = `<code>${divDisplay}</code>`;
+          document.getElementById("val-divcount").textContent = divisors.length.toLocaleString();
+
+          const divSum = divisors.reduce((a, b) => a + b, 0n);
+          document.getElementById("val-divsum").textContent = formatBigInt(divSum);
+        }
+      }
+
+      loadFacts(num, rawStr, complete, factors, isPrime);
+    }
+
+    async function loadOrComputeAnalysis(num, rawStr) {
+      const cacheKey = `numvault_props_v1_${rawStr}`;
+
+      // 1. Check instant local sessionStorage cache first (0ms on refresh)
+      try {
+        const localRaw = sessionStorage.getItem(cacheKey);
+        if (localRaw) {
+          const parsed = JSON.parse(localRaw);
+          applyAnalysisResult(num, rawStr, {
+            ...parsed,
+            factors: parsed.factors.map(([p, e]) => [BigInt(p), e])
+          }, "Loaded from local cache");
+          return;
+        }
+      } catch (e) {}
+
+      // 2. Check global Cloudflare KV cache (/api/props)
+      try {
+        const res = await fetch(`/api/props?n=${rawStr}`);
+        if (res.ok) {
+          const kvProps = await res.json();
+          if (kvProps && Array.isArray(kvProps.factors)) {
+            try { sessionStorage.setItem(cacheKey, JSON.stringify(kvProps)); } catch (e) {}
+            applyAnalysisResult(num, rawStr, {
+              ...kvProps,
+              factors: kvProps.factors.map(([p, e]) => [BigInt(p), e])
+            }, "Loaded from global KV cache");
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // 3. Not cached yet: run Web Worker once and persist globally
+      document.getElementById("val-factors").innerHTML = `<code>Testing primality &amp; factoring (&le; 10 digits)...</code>`;
+
+      runFactorWorker(rawStr, (result) => {
+        applyAnalysisResult(num, rawStr, result, "Freshly computed");
+
+        const serializable = {
+          factors: result.factors.map(([p, e]) => [p.toString(), e]),
+          complete: result.complete,
+          skipped: result.skipped,
+          isPrime: result.isPrime
+        };
+
+        try { sessionStorage.setItem(cacheKey, JSON.stringify(serializable)); } catch (e) {}
+
+        fetch("/api/props", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ number: rawStr, props: serializable })
+        }).catch(() => {});
+      });
+    }
 
     function initPage(num, rawStr) {
       const displayStr = rawStr.length <= 30 ? formatBigInt(num) : `${rawStr.slice(0, 12)}...${rawStr.slice(-12)} (${rawStr.length} digits)`;
@@ -569,62 +682,7 @@
       selectEl.innerHTML = options;
       document.getElementById("val-custom-base").textContent = globalBases[12];
 
-      document.getElementById("val-factors").innerHTML = `<code>Testing primality &amp; factoring (&le; 10 digits)...</code>`;
-
-      runFactorWorker(rawStr, ({ factors, complete, skipped, isPrime }) => {
-        const badgeEl = document.getElementById("num-badge");
-
-        if (num === 1n) {
-          badgeEl.textContent = "Unit (Neither Prime nor Composite)";
-          badgeEl.style.background = "#262c38"; badgeEl.style.color = "#4f8cff";
-        } else if (isPrime) {
-          badgeEl.textContent = rawStr.length > 24 ? "Probable Prime" : "Prime";
-          badgeEl.style.background = "#1e3329"; badgeEl.style.color = "#4ade80";
-        } else if (skipped) {
-          badgeEl.textContent = `Composite (${rawStr.length} digits)`;
-          badgeEl.style.background = "#33261e"; badgeEl.style.color = "#fb923c";
-        } else {
-          const totalExp = factors.reduce((acc, f) => acc + f[1], 0);
-          badgeEl.textContent = totalExp === 2 ? "Composite (Semiprime)" : "Composite";
-          badgeEl.style.background = "#33261e"; badgeEl.style.color = "#fb923c";
-        }
-
-        if (skipped) {
-          document.getElementById("val-factors").innerHTML = `<code>Composite — full prime factorization only computed up to 10 digits</code>`;
-          document.getElementById("val-divisors").innerHTML = `<code>Not listed for numbers &gt; 10 digits</code>`;
-          document.getElementById("val-divcount").textContent = "—";
-          document.getElementById("val-divsum").textContent = "—";
-        } else {
-          let factHtml = "<code>1</code> (Empty product)";
-          if (factors.length > 0) {
-            let parts = factors.map(([b, e]) => e === 1 ? `${formatBigInt(b)}` : `${formatBigInt(b)}<sup>${e}</sup>`);
-            factHtml = `<code>${parts.join(" &times; ")}</code>`;
-          }
-          document.getElementById("val-factors").innerHTML = factHtml;
-
-          // Only enumerate all divisors for numbers up to 10 digits
-          if (rawStr.length > 10) {
-            document.getElementById("val-divisors").innerHTML = isPrime
-              ? `<code>1 and n (trivial divisors only — hidden for numbers &gt; 10 digits)</code>`
-              : `<code>Not listed for numbers &gt; 10 digits</code>`;
-            document.getElementById("val-divcount").textContent = isPrime ? "2" : "—";
-            document.getElementById("val-divsum").textContent = isPrime ? "n + 1" : "—";
-          } else {
-            const divisors = divisorsFromFactors(factors);
-            const divDisplay = divisors.length > 100
-              ? divisors.slice(0, 100).map(formatBigInt).join(", ") + ` ... (showing 100 of ${divisors.length.toLocaleString()})`
-              : divisors.map(formatBigInt).join(", ");
-            document.getElementById("val-divisors").innerHTML = `<code>${divDisplay}</code>`;
-            document.getElementById("val-divcount").textContent = divisors.length.toLocaleString();
-
-            const divSum = divisors.reduce((a, b) => a + b, 0n);
-            document.getElementById("val-divsum").textContent = formatBigInt(divSum);
-          }
-        }
-
-        loadFacts(num, rawStr, complete, factors, isPrime);
-      });
-
+      loadOrComputeAnalysis(num, rawStr);
       trackVisits(rawStr);
     }
 
