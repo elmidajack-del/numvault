@@ -25,16 +25,20 @@ export async function onRequestPost({ request, env }) {
       return new Response(JSON.stringify({ error: "Invalid input" }), { status: 400 });
     }
 
-    const formattedFact = submitter ? `${fact} — ${submitter}` : fact;
-    const key = `num_${num}`;
+    const entry = {
+      text: fact,
+      submitter: submitter || null,
+      createdAt: new Date().toISOString()
+    };
 
+    const key = `num_${num}`;
     const existingRaw = await env.FACTS_KV.get(key);
     const existing = existingRaw ? JSON.parse(existingRaw) : [];
-    existing.unshift(formattedFact);
+    existing.unshift(entry);
 
     await env.FACTS_KV.put(key, JSON.stringify(existing));
 
-    return new Response(JSON.stringify({ success: true, facts: existing }), {
+    return new Response(JSON.stringify({ success: true, entry, facts: existing }), {
       headers: { "Content-Type": "application/json" }
     });
   } catch (err) {
