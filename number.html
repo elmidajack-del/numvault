@@ -50,6 +50,32 @@
       padding: 0.2rem 0.45rem; border-radius: 4px; font-size: 0.9rem; 
       display: inline-block; max-width: 100%; overflow-wrap: anywhere;
     }
+    .base-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.45rem;
+    }
+    .base-actions {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+    .mini-btn {
+      background: #232833;
+      color: var(--accent);
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .mini-btn:hover {
+      border-color: var(--accent);
+      background: #1a2438;
+    }
+
     select, input[type="text"], textarea { 
       background: #111318; color: var(--text); border: 1px solid var(--border); 
       padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.95rem; font-family: inherit;
@@ -71,6 +97,7 @@
       border-top: 1px solid var(--border); padding-top: 1.5rem; 
       display: flex; justify-content: space-between; align-items: center;
     }
+
   </style>
 </head>
 <body>
@@ -132,16 +159,16 @@
             <th>Hexadecimal (Base 16)</th>
             <td id="val-b16"><code>—</code></td>
           </tr>
-          <tr>
+         <tr>
             <th>Base 36</th>
             <td id="val-b36"><code>—</code></td>
           </tr>
           <tr>
             <th>Custom Base (2–36)</th>
             <td>
-              <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+              <div style="display: flex; gap: 0.6rem; align-items: flex-start; flex-wrap: wrap;">
                 <select id="base-select" onchange="updateCustomBase()" aria-label="Select numeral base"></select>
-                <code id="val-custom-base">—</code>
+                <div id="val-custom-base"><code>—</code></div>
               </div>
             </td>
           </tr>
@@ -246,6 +273,66 @@
         temp /= b;
       }
       return res.reverse().join("");
+    }
+const BASE_COLLAPSE_THRESHOLD = 80;
+    const rawBaseStrings = {};
+
+    function renderCollapsibleBase(targetId, fullStr, shouldCollapse) {
+      rawBaseStrings[targetId] = fullStr;
+      const container = document.getElementById(targetId);
+      if (!container) return;
+
+      if (!shouldCollapse || fullStr.length <= BASE_COLLAPSE_THRESHOLD) {
+        container.innerHTML = `<code>${fullStr}</code>`;
+        return;
+      }
+
+      const preview = `${fullStr.slice(0, 36)}…${fullStr.slice(-24)}`;
+      container.dataset.expanded = "0";
+      container.innerHTML = `
+        <div class="base-wrap">
+          <code id="${targetId}-code">${preview}</code>
+          <div class="base-actions">
+            <button type="button" class="mini-btn" onclick="toggleBaseExpand('${targetId}')">
+              Show all (${fullStr.length.toLocaleString()} chars)
+            </button>
+            <button type="button" class="mini-btn" onclick="copyBaseValue('${targetId}', this)">
+              Copy
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleBaseExpand(targetId) {
+      const container = document.getElementById(targetId);
+      const fullStr = rawBaseStrings[targetId];
+      if (!container || !fullStr) return;
+
+      const isExpanded = container.dataset.expanded === "1";
+      const codeEl = document.getElementById(`${targetId}-code`);
+      const btnEl = container.querySelector(".mini-btn");
+
+      if (isExpanded) {
+        codeEl.textContent = `${fullStr.slice(0, 36)}…${fullStr.slice(-24)}`;
+        btnEl.textContent = `Show all (${fullStr.length.toLocaleString()} chars)`;
+        container.dataset.expanded = "0";
+      } else {
+        codeEl.textContent = fullStr;
+        btnEl.textContent = "Collapse";
+        container.dataset.expanded = "1";
+      }
+    }
+
+    async function copyBaseValue(targetId, btnEl) {
+      const fullStr = rawBaseStrings[targetId];
+      if (!fullStr) return;
+      try {
+        await navigator.clipboard.writeText(fullStr);
+        const orig = btnEl.textContent;
+        btnEl.textContent = "Copied!";
+        setTimeout(() => { btnEl.textContent = orig; }, 1500);
+      } catch (e) {}
     }
 
     function divisorsFromFactors(factors) {
@@ -648,30 +735,12 @@ function applyAnalysisResult(num, rawStr, result, sourceLabel = "") {
     }
 
     function initPage(num, rawStr) {
-      const displayStr = rawStr.length <= 30 ? formatBigInt(num) : `${rawStr.slice(0, 12)}...${rawStr.slice(-12)} (${rawStr.length} digits)`;
-      document.getElementById("page-title").textContent = `Number ${displayStr} — NumVault`;
-      document.getElementById("num-heading").textContent = formatBigInt(num);
-      document.getElementById("num-heading").style.wordBreak = "break-all";
-      document.getElementById("num-heading").style.fontSize = rawStr.length > 24 ? "1.5rem" : "2.5rem";
-
-      const prevLink = document.getElementById("prev-link");
-      if (num > 1n) {
-        prevLink.href = `/number.html?n=${(num - 1n).toString()}`;
-      } else {
-        prevLink.style.opacity = "0.4";
-        prevLink.style.pointerEvents = "none";
-      }
-      document.getElementById("next-link").href = `/number.html?n=${(num + 1n).toString()}`;
-
-      document.getElementById("form-num-label").textContent = displayStr;
-      document.getElementById("hidden-number-input").value = rawStr;
-      document.getElementById("val-parity").textContent = num % 2n === 0n ? "Even" : "Odd";
-
-      // Immediate base conversions
-      document.getElementById("val-b2").innerHTML = `<code>${toBaseBigInt(num, 2)}</code>`;
-      document.getElementById("val-b8").innerHTML = `<code>${toBaseBigInt(num, 8)}</code>`;
-      document.getElementById("val-b16").innerHTML = `<code>${toBaseBigInt(num, 16)}</code>`;
-      document.getElementById("val-b36").innerHTML = `<code>${toBaseBigInt(num, 36)}</code>`;
+// Immediate base conversions (auto-collapsed when rawStr > 30 digits)
+      const collapseBases = rawStr.length > 30;
+      renderCollapsibleBase("val-b2", toBaseBigInt(num, 2), collapseBases);
+      renderCollapsibleBase("val-b8", toBaseBigInt(num, 8), collapseBases);
+      renderCollapsibleBase("val-b16", toBaseBigInt(num, 16), collapseBases);
+      renderCollapsibleBase("val-b36", toBaseBigInt(num, 36), collapseBases);
 
       const selectEl = document.getElementById("base-select");
       let options = "";
@@ -680,15 +749,75 @@ function applyAnalysisResult(num, rawStr, result, sourceLabel = "") {
         options += `<option value="${b}" ${b === 12 ? "selected" : ""}>Base ${b}</option>`;
       }
       selectEl.innerHTML = options;
-      document.getElementById("val-custom-base").textContent = globalBases[12];
-
+      renderCollapsibleBase("val-custom-base", globalBases[12], collapseBases);
       loadOrComputeAnalysis(num, rawStr);
       trackVisits(rawStr);
     }
 
     function updateCustomBase() {
       const b = document.getElementById("base-select").value;
-      document.getElementById("val-custom-base").textContent = globalBases[b];
+      renderCollapsibleBase("val-custom-base", globalBases[b], rawNum.length > 30);
+    }
+
+    const BASE_COLLAPSE_THRESHOLD = 80; // Collapse base outputs longer than 80 chars (~25+ decimal digits)
+    const rawBaseStrings = {}; // Stores full un-truncated strings by element ID
+
+    function renderCollapsibleBase(targetId, fullStr, shouldCollapse) {
+      rawBaseStrings[targetId] = fullStr;
+      const container = document.getElementById(targetId);
+      if (!container) return;
+
+      if (!shouldCollapse || fullStr.length <= BASE_COLLAPSE_THRESHOLD) {
+        container.innerHTML = `<code>${fullStr}</code>`;
+        return;
+      }
+
+      const preview = `${fullStr.slice(0, 36)}…${fullStr.slice(-24)}`;
+      container.dataset.expanded = "0";
+      container.innerHTML = `
+        <div class="base-wrap">
+          <code id="${targetId}-code">${preview}</code>
+          <div class="base-actions">
+            <button type="button" class="mini-btn" onclick="toggleBaseExpand('${targetId}')">
+              Show all (${fullStr.length.toLocaleString()} chars)
+            </button>
+            <button type="button" class="mini-btn" onclick="copyBaseValue('${targetId}', this)">
+              Copy
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleBaseExpand(targetId) {
+      const container = document.getElementById(targetId);
+      const fullStr = rawBaseStrings[targetId];
+      if (!container || !fullStr) return;
+
+      const isExpanded = container.dataset.expanded === "1";
+      const codeEl = document.getElementById(`${targetId}-code`);
+      const btnEl = container.querySelector(".mini-btn");
+
+      if (isExpanded) {
+        codeEl.textContent = `${fullStr.slice(0, 36)}…${fullStr.slice(-24)}`;
+        btnEl.textContent = `Show all (${fullStr.length.toLocaleString()} chars)`;
+        container.dataset.expanded = "0";
+      } else {
+        codeEl.textContent = fullStr;
+        btnEl.textContent = "Collapse";
+        container.dataset.expanded = "1";
+      }
+    }
+
+    async function copyBaseValue(targetId, btnEl) {
+      const fullStr = rawBaseStrings[targetId];
+      if (!fullStr) return;
+      try {
+        await navigator.clipboard.writeText(fullStr);
+        const orig = btnEl.textContent;
+        btnEl.textContent = "Copied!";
+        setTimeout(() => { btnEl.textContent = orig; }, 1500);
+      } catch (e) {}
     }
 
     // Timestamped Community Fact Formatting Helpers
