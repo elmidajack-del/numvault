@@ -126,6 +126,28 @@
       font-size: 0.8rem; font-weight: 500; color: var(--accent);
       background: #1a2438; padding: 0.15rem 0.55rem; border-radius: 999px;
     }
+
+    /* Recent Community Facts Feed */
+    .recent-feed {
+      display: flex; flex-direction: column; gap: 0.65rem;
+    }
+    .feed-item {
+      background: #111318; border: 1px solid var(--border); border-radius: 6px;
+      padding: 0.75rem 0.95rem; display: flex; flex-direction: column; gap: 0.3rem;
+    }
+    .feed-header {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 0.5rem;
+    }
+    .feed-num-link {
+      font-family: ui-monospace, monospace; font-weight: 700; font-size: 0.92rem;
+      color: var(--accent); text-decoration: none; background: #1a2438;
+      padding: 0.15rem 0.55rem; border-radius: 4px;
+    }
+    .feed-num-link:hover { text-decoration: underline; }
+    .feed-meta { font-size: 0.8rem; color: var(--muted); }
+    .feed-text { font-size: 0.94rem; color: var(--text); word-break: break-word; }
+
     .empty-state {
       text-align: center; padding: 2rem 1rem; color: var(--muted);
       background: #111318; border: 1px dashed var(--border); border-radius: 6px;
@@ -246,6 +268,18 @@
       </div>
     </div>
 
+    <!-- Global Recent Community Facts Feed -->
+    <div class="card">
+      <h2>
+        <span>Recent Community Facts</span>
+        <span id="recent-facts-pill" class="pill">Live Feed</span>
+      </h2>
+      <p style="font-size: 0.9rem;">Latest mathematical observations and trivia submitted across all numbers.</p>
+      <div id="recent-facts-feed" class="recent-feed">
+        <div class="empty-state">Loading recent submissions...</div>
+      </div>
+    </div>
+
     <footer class="site-footer">
       <span>NumVault &copy; 2026</span>
       <span id="catalog-status" style="color: var(--muted);">Syncing index...</span>
@@ -255,17 +289,36 @@
   <script>
     let allNumbers = [];
     let communitySet = new Set();
-    let classCache = new Map(); // numStr -> { prime, mersenne, fibonacci, power }
+    let classCache = new Map();
     let currentGroup = "all";
     let currentMathClass = "any";
     let currentPage = 1;
     let pageSize = 100;
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, ch => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[ch]));
+    }
 
     function formatCompactNumber(rawStr) {
       if (rawStr.length <= 14) {
         return rawStr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       }
       return `${rawStr.slice(0, 6)}…${rawStr.slice(-4)} (${rawStr.length}d)`;
+    }
+
+    function formatFactTimestamp(isoStr) {
+      if (!isoStr) return "";
+      const date = new Date(isoStr);
+      if (Number.isNaN(date.getTime())) return "";
+      return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
     }
 
     function handleLookup(e) {
@@ -394,7 +447,6 @@
     }
 
     function updateFilterCounts() {
-      // Scale / origin counts
       document.getElementById("count-all").textContent = allNumbers.length.toLocaleString();
       document.getElementById("count-small").textContent = allNumbers.filter(n => matchesGroup(n, "small")).length.toLocaleString();
       document.getElementById("count-medium").textContent = allNumbers.filter(n => matchesGroup(n, "medium")).length.toLocaleString();
@@ -403,7 +455,6 @@
       document.getElementById("count-community").textContent = communitySet.size.toLocaleString();
       document.getElementById("total-indexed-pill").textContent = `${allNumbers.length.toLocaleString()} indexed`;
 
-      // Mathematical class counts scoped to currently selected scale group
       const inCurrentGroup = allNumbers.filter(n => matchesGroup(n, currentGroup));
       document.getElementById("class-count-any").textContent = inCurrentGroup.length.toLocaleString();
       document.getElementById("class-count-prime").textContent = inCurrentGroup.filter(n => matchesMathClass(n, "prime")).length.toLocaleString();
@@ -473,6 +524,46 @@
       document.getElementById("next-page-btn").disabled = currentPage >= totalPages;
     }
 
+    async function loadRecentFacts() {
+      const feedEl = document.getElementById("recent-facts-feed");
+      const pillEl = document.getElementById("recent-facts-pill");
+
+      try {
+        const res = await fetch("/api/recent-facts");
+        if (!res.ok) throw new Error("Failed to fetch recent facts");
+        const items = await res.json();
+
+        if (!Array.isArray(items) || items.length === 0) {
+          feedEl.innerHTML = `<div class="empty-state">No community facts submitted yet. Open any number page to contribute the first one!</div>`;
+          pillEl.textContent = "0 recent";
+          return;
+        }
+
+        pillEl.textContent = `${items.length} latest`;
+        feedEl.innerHTML = items.slice(0, 10).map(item => {
+          const numStr = String(item.number || "");
+          const displayNum = formatCompactNumber(numStr);
+          const text = escapeHtml(item.text || "");
+          const submitter = item.submitter ? `Submitted by <strong>${escapeHtml(item.submitter)}</strong>` : "Anonymous contributor";
+          const ts = formatFactTimestamp(item.createdAt);
+          const timeHtml = ts ? ` &bull; <span title="${escapeHtml(item.createdAt)}">${ts}</span>` : "";
+
+          return `
+            <div class="feed-item">
+              <div class="feed-header">
+                <a class="feed-num-link" href="/number.html?n=${escapeHtml(numStr)}" title="${escapeHtml(numStr)}">#${displayNum}</a>
+                <span class="feed-meta">${submitter}${timeHtml}</span>
+              </div>
+              <div class="feed-text">${text}</div>
+            </div>
+          `;
+        }).join("");
+      } catch (err) {
+        feedEl.innerHTML = `<div class="empty-state">Recent community facts unavailable in offline mode.</div>`;
+        pillEl.textContent = "Offline";
+      }
+    }
+
     async function initCatalog() {
       const statusEl = document.getElementById("catalog-status");
 
@@ -504,7 +595,6 @@
         return ba < bb ? -1 : ba > bb ? 1 : 0;
       });
 
-      // Pre-warm classification cache for all indexed BigInts
       for (const numStr of allNumbers) {
         classifyNumber(numStr);
       }
@@ -514,6 +604,7 @@
     }
 
     initCatalog();
+    loadRecentFacts();
   </script>
 </body>
 </html>
