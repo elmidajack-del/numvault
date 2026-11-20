@@ -669,7 +669,7 @@
       } catch (e) {}
 
       // 2. Single bundled POST /api/record?n=<rawStr> (increments views + fetches facts + fetches cached props)
-      let views = null;
+let views = null;
       let kvFacts = [];
       let cachedProps = null;
 
@@ -691,7 +691,6 @@
         localStorage.setItem(localKey, String(views));
         counterEl.textContent = `👁️ Views: ${views.toLocaleString()}`;
       }
-
       // Check local props cache if KV didn't have it yet
       if (!cachedProps) {
         try {

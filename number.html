@@ -876,23 +876,6 @@ function initPage(num, rawStr) {
       factsList.innerHTML = factsHtml + mathFacts;
     }
 
-    async function trackVisits(rawStr) {
-      const counterEl = document.getElementById("visit-counter");
-      try {
-        const res = await fetch(`/api/views?n=${rawStr}`, { method: "POST" });
-        if (res.ok) {
-          const data = await res.json();
-          counterEl.textContent = `👁️ Views: ${data.views.toLocaleString()}`;
-          return;
-        }
-      } catch (e) {}
-
-      const key = `numvault_views_${rawStr}`;
-      let views = parseInt(localStorage.getItem(key) || "0") + 1;
-      localStorage.setItem(key, views);
-      counterEl.textContent = `👁️ Views: ${views.toLocaleString()}`;
-    }
-
     document.getElementById("fact-form")?.addEventListener("submit", async function(e) {
       e.preventDefault();
 
