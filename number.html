@@ -206,10 +206,11 @@
     </footer>
   </div>
 
-  <script>
+    <script>
     let globalBases = {};
     let activeWorker = null;
-
+    const BASE_COLLAPSE_THRESHOLD = 80;
+    const rawBaseStrings = {};
     const CUSTOM_FACTS = {
       "1": [
         "The multiplicative identity for integers, real numbers, and complex numbers.",
@@ -274,7 +275,6 @@
       }
       return res.reverse().join("");
     }
-    const rawBaseStrings = {};
 
     function renderCollapsibleBase(targetId, fullStr, shouldCollapse) {
       rawBaseStrings[targetId] = fullStr;
@@ -757,9 +757,6 @@ function applyAnalysisResult(num, rawStr, result, sourceLabel = "") {
       const b = document.getElementById("base-select").value;
       renderCollapsibleBase("val-custom-base", globalBases[b], rawNum.length > 30);
     }
-
-    const BASE_COLLAPSE_THRESHOLD = 80; // Collapse base outputs longer than 80 chars (~25+ decimal digits)
-    const rawBaseStrings = {}; // Stores full un-truncated strings by element ID
 
     function renderCollapsibleBase(targetId, fullStr, shouldCollapse) {
       rawBaseStrings[targetId] = fullStr;
