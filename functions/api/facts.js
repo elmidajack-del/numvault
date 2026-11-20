@@ -31,12 +31,27 @@ export async function onRequestPost({ request, env }) {
       createdAt: new Date().toISOString()
     };
 
+    // 1. Save to the specific number's fact list
     const key = `num_${num}`;
     const existingRaw = await env.FACTS_KV.get(key);
     const existing = existingRaw ? JSON.parse(existingRaw) : [];
     existing.unshift(entry);
-
     await env.FACTS_KV.put(key, JSON.stringify(existing));
+
+    // 2. Append to global recent_facts feed (capped at 25 latest entries)
+    const recentKey = "recent_facts";
+    const recentRaw = await env.FACTS_KV.get(recentKey);
+    const recentList = recentRaw ? JSON.parse(recentRaw) : [];
+    recentList.unshift({
+      number: num,
+      text: entry.text,
+      submitter: entry.submitter,
+      createdAt: entry.createdAt
+    });
+    if (recentList.length > 25) {
+      recentList.length = 25;
+    }
+    await env.FACTS_KV.put(recentKey, JSON.stringify(recentList));
 
     return new Response(JSON.stringify({ success: true, entry, facts: existing }), {
       headers: { "Content-Type": "application/json" }
