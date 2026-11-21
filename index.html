@@ -3,73 +3,358 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="page-title">Number Record — NumVault</title>
-  <meta name="description" content="Explore mathematical properties, prime factorization, divisors, base conversions, and community facts for any positive integer.">
+  <title>NumVault — Pure Integer Catalog</title>
+  <meta name="description" content="Explore mathematical properties, prime factorizations, divisors, base conversions, and community facts for any positive integer.">
   <meta name="robots" content="index, follow">
   <style>
-    :root { 
-      --bg: #0f1115; --card: #181b21; --border: #2a2f3a; 
-      --text: #e6e8ec; --muted: #9aa0aa; --accent: #4f8cff; 
+    :root {
+      --bg: #0f1115;
+      --card: #181b21;
+      --border: #2a2f3a;
+      --text: #e6e8ec;
+      --muted: #9aa0aa;
+      --accent: #4f8cff;
     }
     * { box-sizing: border-box; }
-    body { 
-      font-family: system-ui, -apple-system, sans-serif; 
-      background: var(--bg); color: var(--text); 
-      margin: 0; padding: 2rem 1rem; line-height: 1.6; 
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem 1rem;
+      line-height: 1.6;
     }
-    .container { max-width: 820px; margin: 0 auto; }
-    header.site-header { 
-      display: flex; justify-content: space-between; align-items: center; 
-      margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); 
+    .container { max-width: 920px; margin: 0 auto; }
+    header.site-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
     }
-    header.site-header a { color: var(--text); text-decoration: none; font-weight: 600; font-size: 1.15rem; }
+    header.site-header a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.15rem;
+    }
     header.site-header a:hover { color: var(--accent); }
-    .nav-bar { display: flex; justify-content: space-between; margin-bottom: 1.5rem; gap: 0.75rem; }
-    .nav-bar a { 
-      color: var(--accent); text-decoration: none; padding: 0.45rem 0.9rem; 
-      border: 1px solid var(--border); border-radius: 6px; background: var(--card); font-size: 0.9rem;
+    .header-actions { display: flex; align-items: center; gap: 0.6rem; }
+
+    /* Data Saver Toggle */
+    .saver-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: #111318;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
     }
-    .nav-bar a:hover { border-color: var(--accent); }
-    .card { 
-      background: var(--card); border: 1px solid var(--border); 
-      border-radius: 8px; padding: 1.5rem; margin-bottom: 1.25rem; 
+    .saver-toggle:hover { border-color: var(--accent); color: var(--text); }
+    .saver-toggle.active {
+      background: #182b24;
+      border-color: #4ade80;
+      color: #4ade80;
     }
-    h1 { margin: 0 0 0.5rem 0; font-size: 2.5rem; font-variant-numeric: tabular-nums; }
-    h2 { margin: 0 0 1rem 0; font-size: 1.2rem; color: var(--text); }
-    .badge { 
-      display: inline-block; padding: 0.25rem 0.75rem; 
-      border-radius: 999px; font-size: 0.85rem; font-weight: 600;
+    .saver-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--muted);
     }
-    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
-    th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var(--border); vertical-align: top; }
-    th { color: var(--muted); font-weight: 500; width: 32%; }
-    td { word-break: break-word; }
-    tr:last-child th, tr:last-child td { border-bottom: none; }
-    code { 
-      font-family: ui-monospace, monospace; background: #111318; 
-      padding: 0.2rem 0.45rem; border-radius: 4px; font-size: 0.9rem; 
-      display: inline-block; max-width: 100%; overflow-wrap: anywhere;
+    .saver-toggle.active .saver-dot { background: #4ade80; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
     }
-    select, input[type="text"], textarea { 
-      background: #111318; color: var(--text); border: 1px solid var(--border); 
-      padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.95rem; font-family: inherit;
+    h1 { margin: 0 0 0.4rem 0; font-size: 2.1rem; }
+    h2 {
+      margin: 0 0 0.75rem 0;
+      font-size: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
-    select:focus, input[type="text"]:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
-    .fact-list { margin: 0; padding-left: 1.25rem; }
-    .fact-list li { margin-bottom: 0.5rem; }
-    .form-group { margin-bottom: 1rem; }
-    .form-group label { display: block; margin-bottom: 0.4rem; color: var(--muted); font-size: 0.9rem; }
-    .btn { 
-      background: var(--accent); color: #fff; border: none; 
-      padding: 0.65rem 1.2rem; border-radius: 6px; font-weight: 600; 
-      font-size: 0.95rem; cursor: pointer; text-decoration: none; display: inline-block;
+    p { margin: 0 0 1rem 0; color: var(--muted); }
+    .search-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    input[type="text"], select {
+      background: #111318;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
     }
-    .btn:hover { opacity: 0.9; }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    footer.site-footer { 
-      text-align: center; margin-top: 3rem; font-size: 0.85rem; color: var(--muted); 
-      border-top: 1px solid var(--border); padding-top: 1.5rem; 
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;
+    input[type="text"] { flex: 1; min-width: 240px; font-family: ui-monospace, monospace; }
+    input[type="text"]:focus, select:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.15rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn:hover { opacity: 0.92; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary {
+      background: #232833;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); opacity: 1; }
+    .quick-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem; }
+    .tag {
+      background: #111318;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.25rem 0.65rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      text-decoration: none;
+      font-family: ui-monospace, monospace;
+    }
+    .tag:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Filters */
+    .filter-section-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 0.45rem;
+      font-weight: 600;
+    }
+    .group-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-bottom: 0.9rem;
+      padding-bottom: 0.9rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .group-tab {
+      background: #111318;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.42rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .group-tab:hover { border-color: var(--accent); color: var(--text); }
+    .group-tab.active {
+      background: #1a2438;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .class-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-bottom: 1.15rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .class-pill {
+      background: #111318;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.78rem;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .class-pill:hover { border-color: #4ade80; color: var(--text); }
+    .class-pill.active {
+      background: #182b24;
+      border-color: #4ade80;
+      color: #4ade80;
+    }
+    .tab-count {
+      background: #0f1115;
+      padding: 0.08rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      color: var(--text);
+    }
+
+    /* Pagination */
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.15rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .page-controls { display: flex; align-items: center; gap: 0.5rem; }
+    .page-info { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+
+    /* Number Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+      gap: 0.55rem;
+    }
+    .num-tile {
+      display: block;
+      background: #111318;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.55rem 0.5rem;
+      text-align: center;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      font-size: 0.93rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .num-tile:hover { border-color: var(--accent); color: var(--accent); background: #151922; }
+    .num-tile.discovered { border-color: #2f436e; }
+    .pill {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--accent);
+      background: #1a2438;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+    }
+
+    /* Leaderboard */
+    .leaderboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.6rem;
+    }
+    .lb-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      background: #111318;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.6rem 0.85rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .lb-item:hover { border-color: var(--accent); background: #151922; }
+    .lb-left { display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
+    .lb-rank {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+      background: #181b21;
+      border: 1px solid var(--border);
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .lb-rank.top-3 { color: #fbbf24; border-color: #6b5318; background: #261f10; }
+    .lb-num {
+      font-family: ui-monospace, monospace;
+      font-weight: 700;
+      font-size: 0.94rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .lb-views {
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Recent Facts */
+    .recent-feed { display: flex; flex-direction: column; gap: 0.65rem; }
+    .feed-item {
+      background: #111318;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 0.95rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .feed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .feed-num-link {
+      font-family: ui-monospace, monospace;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--accent);
+      text-decoration: none;
+      background: #1a2438;
+      padding: 0.15rem 0.55rem;
+      border-radius: 4px;
+    }
+    .feed-num-link:hover { text-decoration: underline; }
+    .feed-meta { font-size: 0.8rem; color: var(--muted); }
+    .feed-text { font-size: 0.94rem; color: var(--text); word-break: break-word; }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--muted);
+      background: #111318;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+    }
+    .error-msg { color: #f87171; font-size: 0.88rem; margin-top: 0.5rem; display: none; }
+    footer.site-footer {
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
   </style>
 </head>
@@ -77,461 +362,178 @@
   <div class="container">
     <header class="site-header">
       <a href="/index.html">NumVault 🗄️</a>
-      <a href="/index.html" style="font-size: 0.9rem; font-weight: 500; color: var(--accent);">&larr; All Numbers</a>
+      <div class="header-actions">
+        <button type="button" id="data-saver-btn" class="saver-toggle" onclick="toggleDataSaver()" title="Reduces page payload size and caches responses for cellular data plans">
+          <span class="saver-dot"></span>
+          <span id="data-saver-label">Data Saver: Off</span>
+        </button>
+      </div>
     </header>
 
-    <div id="content-container">
-      <div class="nav-bar">
-        <a id="prev-link" href="#">&larr; Previous</a>
-        <a id="next-link" href="#">Next &rarr;</a>
+    <div class="card">
+      <h1>Explore Any Positive Integer</h1>
+      <p>Enter any positive integer—small, large, or hundreds of digits long—to inspect its mathematical record, base representations, and community facts.</p>
+
+      <form id="lookup-form" class="search-row" onsubmit="handleLookup(event)">
+        <input
+          type="text"
+          id="num-input"
+          inputmode="numeric"
+          placeholder="e.g. 42, 1729, or 170141183460469231731687303715884105727"
+          autocomplete="off"
+          required
+        />
+        <button type="submit" class="btn">Inspect Number</button>
+        <button type="button" class="btn btn-secondary" onclick="openRandom()">Random</button>
+      </form>
+      <div id="lookup-error" class="error-msg">Please enter a valid positive integer (digits 0–9 only, starting with 1–9).</div>
+
+      <div class="quick-tags">
+        <span style="color: var(--muted); font-size: 0.85rem; align-self: center;">Notable:</span>
+        <a class="tag" href="/number.html?n=1">1 (Unit)</a>
+        <a class="tag" href="/number.html?n=2">2 (Even Prime)</a>
+        <a class="tag" href="/number.html?n=6">6 (Perfect)</a>
+        <a class="tag" href="/number.html?n=42">42</a>
+        <a class="tag" href="/number.html?n=1729">1,729 (Taxicab)</a>
+        <a class="tag" href="/number.html?n=8128">8,128 (Perfect)</a>
+        <a class="tag" href="/number.html?n=2147483647">2³¹−1 (Mersenne)</a>
+        <a class="tag" href="/number.html?n=170141183460469231731687303715884105727">2¹²⁷−1 (39-digit Prime)</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span>Indexed Number Directory</span>
+        <span id="total-indexed-pill" class="pill">100 indexed</span>
+      </h2>
+
+      <div class="filter-section-label">Scale &amp; Origin</div>
+      <div class="group-tabs" id="group-tabs">
+        <button type="button" class="group-tab active" data-group="all" onclick="setGroup('all')">
+          All Numbers <span class="tab-count" id="count-all">0</span>
+        </button>
+        <button type="button" class="group-tab" data-group="small" onclick="setGroup('small')">
+          Small (1–3d) <span class="tab-count" id="count-small">0</span>
+        </button>
+        <button type="button" class="group-tab" data-group="medium" onclick="setGroup('medium')">
+          Medium (4–10d) <span class="tab-count" id="count-medium">0</span>
+        </button>
+        <button type="button" class="group-tab" data-group="large" onclick="setGroup('large')">
+          Large (11–30d) <span class="tab-count" id="count-large">0</span>
+        </button>
+        <button type="button" class="group-tab" data-group="huge" onclick="setGroup('huge')">
+          Huge (31+d) <span class="tab-count" id="count-huge">0</span>
+        </button>
+        <button type="button" class="group-tab" data-group="community" onclick="setGroup('community')">
+          Community Requested <span class="tab-count" id="count-community">0</span>
+        </button>
       </div>
 
-      <div class="card">
-        <h1 id="num-heading">Loading...</h1>
-        <span id="num-badge" class="badge">Analyzing...</span>
+      <div class="filter-section-label">Mathematical Class</div>
+      <div class="class-pills" id="class-pills">
+        <button type="button" class="class-pill active" data-class="any" onclick="setMathClass('any')">Any Class</button>
+        <button type="button" class="class-pill" data-class="prime" onclick="setMathClass('prime')">Primes</button>
+        <button type="button" class="class-pill" data-class="mersenne" onclick="setMathClass('mersenne')">Mersenne (2ᵏ−1)</button>
+        <button type="button" class="class-pill" data-class="fibonacci" onclick="setMathClass('fibonacci')">Fibonacci</button>
+        <button type="button" class="class-pill" data-class="power" onclick="setMathClass('power')">Perfect Powers (aᵇ)</button>
       </div>
 
-      <div class="card">
-        <h2>Core Mathematical Properties</h2>
-        <table>
-          <tr>
-            <th>Prime Factorization</th>
-            <td id="val-factors"><code>Loading...</code></td>
-          </tr>
-          <tr>
-            <th>Divisors</th>
-            <td id="val-divisors"><code>Loading...</code></td>
-          </tr>
-          <tr>
-            <th>Total Divisors</th>
-            <td id="val-divcount">—</td>
-          </tr>
-          <tr>
-            <th>Sum of Divisors (&sigma;)</th>
-            <td id="val-divsum">—</td>
-          </tr>
-          <tr>
-            <th>Parity</th>
-            <td id="val-parity">—</td>
-          </tr>
-        </table>
-      </div>
+      <div id="catalog-grid" class="grid"></div>
 
-      <div class="card">
-        <h2>Base Representations</h2>
-        <table>
-          <tr>
-            <th>Binary (Base 2)</th>
-            <td id="val-b2"><code>—</code></td>
-          </tr>
-          <tr>
-            <th>Octal (Base 8)</th>
-            <td id="val-b8"><code>—</code></td>
-          </tr>
-          <tr>
-            <th>Hexadecimal (Base 16)</th>
-            <td id="val-b16"><code>—</code></td>
-          </tr>
-          <tr>
-            <th>Base 36</th>
-            <td id="val-b36"><code>—</code></td>
-          </tr>
-          <tr>
-            <th>Custom Base (2–36)</th>
-            <td>
-              <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
-                <select id="base-select" onchange="updateCustomBase()" aria-label="Select numeral base"></select>
-                <code id="val-custom-base">—</code>
-              </div>
-            </td>
-          </tr>
-        </table>
+      <div class="pagination-bar" id="pagination-bar">
+        <div class="page-controls">
+          <button type="button" class="btn btn-secondary" id="prev-page-btn" onclick="changePage(-1)">&larr; Prev</button>
+          <span class="page-info" id="page-indicator">Page 1 of 1</span>
+          <button type="button" class="btn btn-secondary" id="next-page-btn" onclick="changePage(1)">Next &rarr;</button>
+        </div>
+        <div class="page-controls">
+          <label for="page-size-select" style="color: var(--muted); font-size: 0.88rem;">Per page:</label>
+          <select id="page-size-select" onchange="changePageSize()">
+            <option value="25">25 (Saver)</option>
+            <option value="50">50</option>
+            <option value="100" selected>100</option>
+            <option value="250">250</option>
+          </select>
+        </div>
       </div>
+    </div>
 
-      <div class="card">
-        <h2>Mathematical &amp; Community Facts</h2>
-        <ul id="facts-list" class="fact-list">
-          <li>Loading facts...</li>
-        </ul>
+    <div class="card" id="leaderboard-card">
+      <h2>
+        <span>Most Viewed Numbers</span>
+        <span id="leaderboard-pill" class="pill">Top 10</span>
+      </h2>
+      <p style="font-size: 0.9rem;">The most frequently inspected integers across NumVault.</p>
+      <div id="top-viewed-grid" class="leaderboard-grid">
+        <div class="empty-state" style="grid-column: 1 / -1;">Loading leaderboard...</div>
       </div>
+    </div>
 
-      <div class="card">
-        <h2>Submit a Fact for <span id="form-num-label">this number</span></h2>
-        <form id="fact-form">
-          <input type="hidden" id="hidden-number-input" />
-          <div class="form-group">
-            <label for="fact-text">Mathematical property, sequence membership, or notable trivia</label>
-            <textarea id="fact-text" rows="3" style="width: 100%;" placeholder="e.g. Smallest number expressible as the sum of two cubes in two different ways." required></textarea>
-          </div>
-          <div class="form-group">
-            <label for="submitter-name">Your Name or Handle (optional)</label>
-            <input type="text" id="submitter-name" style="width: 100%; max-width: 340px;" placeholder="e.g. EulerFan" />
-          </div>
-          <button type="submit" class="btn">Submit Fact</button>
-        </form>
-        <div id="form-success" style="display: none; padding: 1rem; background: #1e3329; color: #4ade80; border-radius: 6px;"></div>
+    <div class="card" id="recent-facts-card">
+      <h2>
+        <span>Recent Community Facts</span>
+        <span id="recent-facts-pill" class="pill">Live Feed</span>
+      </h2>
+      <p style="font-size: 0.9rem;">Latest mathematical observations and trivia submitted across all numbers.</p>
+      <div id="recent-facts-feed" class="recent-feed">
+        <div class="empty-state">Loading recent submissions...</div>
       </div>
     </div>
 
     <footer class="site-footer">
       <span>NumVault &copy; 2026</span>
-      <span id="visit-counter">👁️ Views: —</span>
+      <span id="catalog-status" style="color: var(--muted);">Loading catalog...</span>
     </footer>
   </div>
 
   <script>
-    let globalBases = {};
-    let activeWorker = null;
-    const isDataSaver = localStorage.getItem("numvault_data_saver") === "1";
+    const SAVER_KEY = "numvault_data_saver";
+    let dataSaver = localStorage.getItem(SAVER_KEY) === "1";
+    let currentGroup = "all";
+    let currentMathClass = "any";
+    let currentPage = 1;
+    let pageSize = dataSaver ? 25 : 100;
+    let feedsLoaded = false;
 
-    const CUSTOM_FACTS = {
-      "1": [
-        "The multiplicative identity for integers, real numbers, and complex numbers.",
-        "The first Fibonacci number (and the second), triangular number, and square/cube number.",
-        "The only positive integer with exactly one positive divisor."
-      ],
-      "2": [
-        "The smallest prime number and the only even prime.",
-        "The base of the binary numeral system used across modern computing."
-      ],
-      "42": [
-        "The 'Answer to the Ultimate Question of Life, the Universe, and Everything' in Douglas Adams' Hitchhiker's Guide.",
-        "The fifth Catalan number and a pronic number (6 × 7)."
-      ],
-      "1729": [
-        "The Hardy–Ramanujan taxicab number: the smallest positive integer expressible as the sum of two positive cubes in two different ways (1³ + 12³ = 9³ + 10³)."
-      ]
-    };
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const rawNum = (urlParams.get('n') || "").replace(/[\s,]/g, "").trim();
-
-    if (!/^[1-9][0-9]*$/.test(rawNum)) {
-      document.getElementById("content-container").innerHTML = `
-        <div class="card" style="text-align: center; padding: 3rem 1.5rem;">
-          <h2 style="margin-top: 0; font-size: 2rem; justify-content: center;">No Number Specified</h2>
-          <p style="color: var(--muted); margin-bottom: 1.5rem;">Enter any positive integer (small, large, or huge) to view or index its record:</p>
-          <form onsubmit="jumpToNumber(event)" style="display: flex; gap: 0.5rem; justify-content: center; max-width: 520px; margin: 0 auto;">
-            <input type="text" inputmode="numeric" id="jump-input" placeholder="e.g. 42 or 170141183460469231731687303715884105727" required style="flex: 1;" />
-            <button type="submit" class="btn">Search</button>
-          </form>
-          <p style="margin-top: 2rem;"><a href="/index.html" style="color: var(--accent); text-decoration: none;">&larr; Return to Index Directory</a></p>
-        </div>
-      `;
-      document.getElementById("page-title").textContent = "Specify Number — NumVault";
-      document.getElementById("visit-counter").style.display = "none";
-    } else {
-      initPage(BigInt(rawNum), rawNum);
+    function isValidPositiveInt(str) {
+      return /^[1-9][0-9]*$/.test(str);
     }
 
-    function jumpToNumber(e) {
-      e.preventDefault();
-      const val = document.getElementById('jump-input').value.replace(/[\s,]/g, "").trim();
-      if (/^[1-9][0-9]*$/.test(val)) {
-        window.location.href = '/number.html?n=' + val;
-      }
+    function numberHref(numStr) {
+      return `/number.html?n=${encodeURIComponent(String(numStr))}`;
     }
 
-    function formatBigInt(n) {
-      return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    function syncDataSaverUI() {
+      const btn = document.getElementById("data-saver-btn");
+      const label = document.getElementById("data-saver-label");
+      const selectEl = document.getElementById("page-size-select");
+
+      btn.classList.toggle("active", dataSaver);
+      label.textContent = dataSaver ? "Data Saver: On" : "Data Saver: Off";
+      selectEl.value = String(pageSize);
     }
 
-    function toBaseBigInt(num, base) {
-      const digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      const b = BigInt(base);
-      if (num === 0n) return "0";
-      let res = [];
-      let temp = num;
-      while (temp > 0n) {
-        res.push(digits[Number(temp % b)]);
-        temp /= b;
-      }
-      return res.reverse().join("");
-    }
-
-    function divisorsFromFactors(factors) {
-      let divs = [1n];
-      for (const [prime, exp] of factors) {
-        let next = [];
-        let pPow = 1n;
-        for (let e = 0; e <= exp; e++) {
-          for (const d of divs) next.push(d * pPow);
-          pPow *= prime;
-        }
-        divs = next;
-      }
-      divs.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-      return divs;
-    }
-
-    // Exact floor(n^(1/k)) for arbitrary-precision BigInt via binary search
-    function iRoot(n, k) {
-      if (n < 0n) throw new Error("Negative root");
-      if (n < 2n) return n;
-      const bitLen = BigInt(n.toString(2).length);
-      let low = 1n << ((bitLen - 1n) / BigInt(k));
-      let high = (1n << ((bitLen + BigInt(k) - 1n) / BigInt(k))) + 1n;
-
-      while (low <= high) {
-        const mid = (low + high) >> 1n;
-        const p = mid ** BigInt(k);
-        if (p === n) return mid;
-        if (p < n) low = mid + 1n;
-        else high = mid - 1n;
-      }
-      return high;
-    }
-
-    function isPerfectSquareBigInt(n) {
-      if (n < 0n) return false;
-      const r = iRoot(n, 2);
-      return r * r === n;
-    }
-
-    // Detects Mersenne numbers (2^k - 1), perfect powers (a^b), and Fibonacci numbers
-    function detectSpecialClasses(num, isPrime) {
-      const classes = [];
-      if (num <= 1n) return classes;
-
-      const plusOne = num + 1n;
-      if ((plusOne & (plusOne - 1n)) === 0n) {
-        const exp = plusOne.toString(2).length - 1;
-        if (exp >= 2) {
-          const label = isPrime
-            ? `<strong>Mersenne Prime</strong> (2<sup>${exp}</sup> &minus; 1)`
-            : `<strong>Mersenne Number</strong> (2<sup>${exp}</sup> &minus; 1)`;
-          classes.push(label);
-        }
-      }
-
-      const maxExp = num.toString(2).length;
-      for (let b = maxExp; b >= 2; b--) {
-        const a = iRoot(num, b);
-        if (a >= 2n && (a ** BigInt(b)) === num) {
-          const typeName = b === 2 ? "Perfect Square" : b === 3 ? "Perfect Cube" : `Perfect ${b}th Power`;
-          classes.push(`<strong>${typeName}</strong> (${formatBigInt(a)}<sup>${b}</sup>)`);
-          break;
-        }
-      }
-
-      const fiveNSq = 5n * num * num;
-      if (isPerfectSquareBigInt(fiveNSq + 4n) || isPerfectSquareBigInt(fiveNSq - 4n)) {
-        let a = 0n, b = 1n, idx = 1;
-        while (b < num) {
-          const next = a + b;
-          a = b;
-          b = next;
-          idx++;
-        }
-        const indexNote = num === 1n ? "F₁ / F₂" : `F<sub>${idx}</sub>`;
-        classes.push(`<strong>Fibonacci Number</strong> (${indexNote})`);
-      }
-
-      return classes;
-    }
-
-    // Web Worker: tests primality for ANY size number, factors composites strictly <= 10 digits
-    function runFactorWorker(numStr, onComplete) {
-      const workerCode = `
-        const MAX_FACTOR_DIGITS = 10;
-
-        function gcd(a, b) {
-          while (b !== 0n) {
-            let t = b;
-            b = a % b;
-            a = t;
-          }
-          return a;
-        }
-
-        function modPow(base, exp, mod) {
-          let result = 1n;
-          base %= mod;
-          while (exp > 0n) {
-            if (exp & 1n) result = (result * base) % mod;
-            exp >>= 1n;
-            base = (base * base) % mod;
-          }
-          return result;
-        }
-
-        function checkPrimality(n) {
-          if (n < 2n) return false;
-          if (n === 2n || n === 3n || n === 5n) return true;
-          if (n % 2n === 0n || n % 3n === 0n || n % 5n === 0n) return false;
-
-          const wheel = [4n, 2n, 4n, 2n, 4n, 6n, 2n, 6n];
-          let d = 7n, wi = 0;
-          while (d * d <= n && d <= 10000n) {
-            if (n % d === 0n) return false;
-            d += wheel[wi];
-            wi = (wi + 1) & 7;
-          }
-          if (d * d > n) return true;
-
-          let m = n - 1n, r = 0n;
-          while ((m & 1n) === 0n) {
-            m >>= 1n;
-            r++;
-          }
-
-          const witnesses = [
-            2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n,
-            31n, 37n, 41n, 43n, 47n, 53n, 59n, 61n, 67n, 71n
-          ];
-
-          for (const a of witnesses) {
-            if (a >= n) break;
-            let x = modPow(a, m, n);
-            if (x === 1n || x === n - 1n) continue;
-            let composite = true;
-            for (let i = 1n; i < r; i++) {
-              x = (x * x) % n;
-              if (x === n - 1n) {
-                composite = false;
-                break;
-              }
-            }
-            if (composite) return false;
-          }
-          return true;
-        }
-
-        function pollardRho(n) {
-          if (n % 2n === 0n) return 2n;
-          let c = 1n;
-          while (true) {
-            let y = 2n, r = 1n, q = 1n, g = 1n, ys = 2n, x = 2n;
-            const m = 128n;
-            while (g === 1n) {
-              x = y;
-              for (let i = 0n; i < r; i++) y = (y * y + c) % n;
-              let k = 0n;
-              while (k < r && g === 1n) {
-                ys = y;
-                const lim = (m < r - k) ? m : (r - k);
-                for (let i = 0n; i < lim; i++) {
-                  y = (y * y + c) % n;
-                  const diff = x > y ? x - y : y - x;
-                  q = (q * diff) % n;
-                }
-                g = gcd(q, n);
-                k += m;
-              }
-              r <<= 1n;
-            }
-            if (g === n) {
-              do {
-                ys = (ys * ys + c) % n;
-                const diff = x > ys ? x - ys : ys - x;
-                g = gcd(diff, n);
-              } while (g === 1n);
-            }
-            if (g !== n) return g;
-            c++;
-          }
-        }
-
-        function analyzeNumber(rawStr) {
-          const num = BigInt(rawStr);
-          const digitCount = rawStr.length;
-
-          if (num <= 1n) {
-            return { factors: [], complete: true, skipped: false, isPrime: false };
-          }
-
-          const isPrime = checkPrimality(num);
-
-          if (isPrime) {
-            return {
-              factors: [[rawStr, 1]],
-              complete: true,
-              skipped: false,
-              isPrime: true
-            };
-          }
-
-          if (digitCount > MAX_FACTOR_DIGITS) {
-            return {
-              factors: [],
-              complete: false,
-              skipped: true,
-              isPrime: false
-            };
-          }
-
-          const map = new Map();
-          const addFactor = (p, count = 1) => map.set(p, (map.get(p) || 0) + count);
-          let temp = num;
-
-          for (const p of [2n, 3n, 5n]) {
-            let c = 0;
-            while (temp % p === 0n) { c++; temp /= p; }
-            if (c > 0) addFactor(p, c);
-          }
-
-          const wheel = [4n, 2n, 4n, 2n, 4n, 6n, 2n, 6n];
-          let d = 7n, wi = 0;
-          while (d * d <= temp && d <= 10000n) {
-            if (temp % d === 0n) {
-              let c = 0;
-              while (temp % d === 0n) { c++; temp /= d; }
-              addFactor(d, c);
-            }
-            d += wheel[wi];
-            wi = (wi + 1) & 7;
-          }
-
-          const stack = temp > 1n ? [temp] : [];
-          while (stack.length > 0) {
-            const curr = stack.pop();
-            if (curr === 1n) continue;
-            if (checkPrimality(curr)) {
-              addFactor(curr, 1);
-              continue;
-            }
-            const divisor = pollardRho(curr);
-            stack.push(divisor);
-            stack.push(curr / divisor);
-          }
-
-          const factors = Array.from(map.entries())
-            .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
-            .map(([p, e]) => [p.toString(), e]);
-
-          return {
-            factors,
-            complete: true,
-            skipped: false,
-            isPrime: false
-          };
-        }
-
-        self.onmessage = function(e) {
-          self.postMessage(analyzeNumber(e.data));
-        };
-      `;
-
-      if (activeWorker) activeWorker.terminate();
-      const blob = new Blob([workerCode], { type: "application/javascript" });
-      activeWorker = new Worker(URL.createObjectURL(blob));
-      activeWorker.onmessage = (e) => {
-        onComplete({
-          factors: e.data.factors.map(([p, exp]) => [BigInt(p), exp]),
-          complete: e.data.complete,
-          skipped: e.data.skipped,
-          isPrime: e.data.isPrime
-        });
-        activeWorker.terminate();
-        activeWorker = null;
-      };
-      activeWorker.postMessage(numStr);
+    function toggleDataSaver() {
+      dataSaver = !dataSaver;
+      localStorage.setItem(SAVER_KEY, dataSaver ? "1" : "0");
+      pageSize = dataSaver ? 25 : 100;
+      currentPage = 1;
+      syncDataSaverUI();
+      fetchHomePage(true);
     }
 
     function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, ch => ({
+      return String(str || "").replace(/[&<>"']/g, ch => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       }[ch]));
+    }
+
+    function formatCompactNumber(rawStr) {
+      const s = String(rawStr || "");
+      if (s.length <= 14) {
+        return s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+      return `${s.slice(0, 6)}…${s.slice(-4)} (${s.length}d)`;
     }
 
     function formatFactTimestamp(isoStr) {
@@ -547,311 +549,223 @@
       });
     }
 
-    function renderCommunityFactItem(entry) {
-      if (typeof entry === "string") {
-        return `<li>${escapeHtml(entry)} 🌟 <small style="color: var(--accent);">(Community)</small></li>`;
-      }
-      const text = escapeHtml(entry.text || "");
-      const byline = entry.submitter ? ` — ${escapeHtml(entry.submitter)}` : "";
-      const ts = formatFactTimestamp(entry.createdAt);
-      const timeTag = ts
-        ? ` <small style="color: var(--muted);" title="${escapeHtml(entry.createdAt)}">&bull; ${ts}</small>`
-        : "";
+    function handleLookup(e) {
+      e.preventDefault();
+      const inputEl = document.getElementById("num-input");
+      const errEl = document.getElementById("lookup-error");
+      const cleaned = inputEl.value.replace(/[\s,]/g, "").trim();
 
-      return `<li>${text}${byline} 🌟 <small style="color: var(--accent);">(Community)</small>${timeTag}</li>`;
-    }
-
-    function renderFactsList(num, rawStr, kvFacts, isPrime) {
-      const factsList = document.getElementById("facts-list");
-      let factsHtml = "";
-
-      if (CUSTOM_FACTS[rawStr]) {
-        factsHtml += CUSTOM_FACTS[rawStr].map(fact => `<li>${fact}</li>`).join("");
-      }
-
-      if (Array.isArray(kvFacts) && kvFacts.length > 0) {
-        factsHtml += kvFacts.map(renderCommunityFactItem).join("");
-      }
-
-      let mathFacts = "";
-      const detectedClasses = detectSpecialClasses(num, isPrime);
-      for (const cls of detectedClasses) {
-        mathFacts += `<li>Special Class: ${cls}</li>`;
-      }
-
-      mathFacts += `<li>Digit length: <strong>${rawStr.length.toLocaleString()}</strong> decimal ${rawStr.length === 1 ? "digit" : "digits"} (${toBaseBigInt(num, 2).length.toLocaleString()} bits).</li>`;
-      factsList.innerHTML = factsHtml + mathFacts;
-    }
-
-    function applyAnalysisResult(num, rawStr, result, kvFacts = [], sourceLabel = "") {
-      const { factors, skipped, isPrime } = result;
-      const badgeEl = document.getElementById("num-badge");
-
-      if (num === 1n) {
-        badgeEl.textContent = "Unit (Neither Prime nor Composite)";
-        badgeEl.style.background = "#262c38"; badgeEl.style.color = "#4f8cff";
-      } else if (isPrime) {
-        badgeEl.textContent = rawStr.length > 24 ? "Probable Prime" : "Prime";
-        badgeEl.style.background = "#1e3329"; badgeEl.style.color = "#4ade80";
-      } else if (skipped) {
-        badgeEl.textContent = `Composite (${rawStr.length} digits)`;
-        badgeEl.style.background = "#33261e"; badgeEl.style.color = "#fb923c";
-      } else {
-        const totalExp = factors.reduce((acc, f) => acc + f[1], 0);
-        badgeEl.textContent = totalExp === 2 ? "Composite (Semiprime)" : "Composite";
-        badgeEl.style.background = "#33261e"; badgeEl.style.color = "#fb923c";
-      }
-
-      if (sourceLabel) badgeEl.title = sourceLabel;
-
-      if (skipped) {
-        document.getElementById("val-factors").innerHTML = `<code>Composite — full prime factorization only computed up to 10 digits</code>`;
-        document.getElementById("val-divisors").innerHTML = `<code>Not listed for numbers &gt; 10 digits</code>`;
-        document.getElementById("val-divcount").textContent = "—";
-        document.getElementById("val-divsum").textContent = "—";
-      } else {
-        let factHtml = "<code>1</code> (Empty product)";
-        if (factors.length > 0) {
-          let parts = factors.map(([b, e]) => e === 1 ? `${formatBigInt(b)}` : `${formatBigInt(b)}<sup>${e}</sup>`);
-          factHtml = `<code>${parts.join(" &times; ")}</code>`;
-        }
-        document.getElementById("val-factors").innerHTML = factHtml;
-
-        if (rawStr.length > 10) {
-          document.getElementById("val-divisors").innerHTML = isPrime
-            ? `<code>1 and n (trivial divisors only — hidden for numbers &gt; 10 digits)</code>`
-            : `<code>Not listed for numbers &gt; 10 digits</code>`;
-          document.getElementById("val-divcount").textContent = isPrime ? "2" : "—";
-          document.getElementById("val-divsum").textContent = isPrime ? "n + 1" : "—";
-        } else {
-          const divisors = divisorsFromFactors(factors);
-          const divDisplay = divisors.length > 100
-            ? divisors.slice(0, 100).map(formatBigInt).join(", ") + ` ... (showing 100 of ${divisors.length.toLocaleString()})`
-            : divisors.map(formatBigInt).join(", ");
-          document.getElementById("val-divisors").innerHTML = `<code>${divDisplay}</code>`;
-          document.getElementById("val-divcount").textContent = divisors.length.toLocaleString();
-
-          const divSum = divisors.reduce((a, b) => a + b, 0n);
-          document.getElementById("val-divsum").textContent = formatBigInt(divSum);
-        }
-      }
-
-      renderFactsList(num, rawStr, kvFacts, isPrime);
-    }
-
-    // Single-endpoint loader (/api/record) + 0-byte refresh cache
-    async function loadRecordUnified(num, rawStr) {
-      const recordCacheKey = `numvault_record_v2_${rawStr}`;
-      const propsCacheKey = `numvault_props_v1_${rawStr}`;
-      const counterEl = document.getElementById("visit-counter");
-      const ttl = isDataSaver ? 300000 : 60000; // 5m in Data Saver, 60s normal
-
-      // 1. 0-byte refresh check: reuse recent record from sessionStorage without hitting network
-      try {
-        const cachedRaw = sessionStorage.getItem(recordCacheKey);
-        if (cachedRaw) {
-          const cached = JSON.parse(cachedRaw);
-          if (Date.now() - cached.ts < ttl && cached.props) {
-            counterEl.textContent = `👁️ Views: ${Number(cached.views || 1).toLocaleString()} (0 B cached)`;
-            applyAnalysisResult(
-              num,
-              rawStr,
-              {
-                ...cached.props,
-                factors: cached.props.factors.map(([p, e]) => [BigInt(p), e])
-              },
-              cached.facts || [],
-              "Loaded from local session cache (0 bytes)"
-            );
-            return;
-          }
-        }
-      } catch (e) {}
-
-      // 2. Single bundled POST /api/record?n=<rawStr> (increments views + fetches facts + fetches cached props)
-let views = null;
-      let kvFacts = [];
-      let cachedProps = null;
-
-      try {
-        const res = await fetch(`/api/record?n=${rawStr}`, { method: "POST" });
-        if (res.ok) {
-          const data = await res.json();
-          views = data.views;
-          kvFacts = Array.isArray(data.facts) ? data.facts : [];
-          cachedProps = data.props && Array.isArray(data.props.factors) ? data.props : null;
-        }
-      } catch (e) {}
-
-      if (views !== null) {
-        counterEl.textContent = `👁️ Views: ${Number(views).toLocaleString()}`;
-      } else {
-        const localKey = `numvault_views_${rawStr}`;
-        views = parseInt(localStorage.getItem(localKey) || "0", 10) + 1;
-        localStorage.setItem(localKey, String(views));
-        counterEl.textContent = `👁️ Views: ${views.toLocaleString()}`;
-      }
-      // Check local props cache if KV didn't have it yet
-      if (!cachedProps) {
-        try {
-          const localPropsRaw = sessionStorage.getItem(propsCacheKey);
-          if (localPropsRaw) cachedProps = JSON.parse(localPropsRaw);
-        } catch (e) {}
-      }
-
-      // 3. If properties were already cached in KV or sessionStorage, render immediately
-      if (cachedProps) {
-        try {
-          sessionStorage.setItem(propsCacheKey, JSON.stringify(cachedProps));
-          sessionStorage.setItem(recordCacheKey, JSON.stringify({
-            ts: Date.now(),
-            views,
-            facts: kvFacts,
-            props: cachedProps
-          }));
-        } catch (e) {}
-
-        applyAnalysisResult(
-          num,
-          rawStr,
-          {
-            ...cachedProps,
-            factors: cachedProps.factors.map(([p, e]) => [BigInt(p), e])
-          },
-          kvFacts,
-          "Loaded from global KV cache"
-        );
+      if (!isValidPositiveInt(cleaned)) {
+        errEl.style.display = "block";
         return;
       }
 
-      // 4. First-time computation: run Web Worker once and save to both caches
-      document.getElementById("val-factors").innerHTML = `<code>Testing primality &amp; factoring (&le; 10 digits)...</code>`;
+      errEl.style.display = "none";
+      window.location.href = numberHref(cleaned);
+    }
 
-      runFactorWorker(rawStr, (result) => {
-        applyAnalysisResult(num, rawStr, result, kvFacts, "Freshly computed");
+    function openRandom() {
+      const randomNum = Math.floor(Math.random() * 1000000) + 1;
+      window.location.href = numberHref(randomNum);
+    }
 
-        const serializableProps = {
-          factors: result.factors.map(([p, e]) => [p.toString(), e]),
-          complete: result.complete,
-          skipped: result.skipped,
-          isPrime: result.isPrime
-        };
-
-        try {
-          sessionStorage.setItem(propsCacheKey, JSON.stringify(serializableProps));
-          sessionStorage.setItem(recordCacheKey, JSON.stringify({
-            ts: Date.now(),
-            views,
-            facts: kvFacts,
-            props: serializableProps
-          }));
-        } catch (e) {}
-
-        // Persist computed mathematical properties globally in KV
-        fetch("/api/props", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ number: rawStr, props: serializableProps })
-        }).catch(() => {});
+    function setGroup(group) {
+      currentGroup = group;
+      currentPage = 1;
+      document.querySelectorAll(".group-tab").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.group === group);
       });
+      fetchHomePage();
     }
 
-    function initPage(num, rawStr) {
-      const displayStr = rawStr.length <= 30 ? formatBigInt(num) : `${rawStr.slice(0, 12)}...${rawStr.slice(-12)} (${rawStr.length} digits)`;
-      document.getElementById("page-title").textContent = `Number ${displayStr} — NumVault`;
-      document.getElementById("num-heading").textContent = formatBigInt(num);
-      document.getElementById("num-heading").style.wordBreak = "break-all";
-      document.getElementById("num-heading").style.fontSize = rawStr.length > 24 ? "1.5rem" : "2.5rem";
+    function setMathClass(mathClass) {
+      currentMathClass = mathClass;
+      currentPage = 1;
+      document.querySelectorAll(".class-pill").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.class === mathClass);
+      });
+      fetchHomePage();
+    }
 
-      const prevLink = document.getElementById("prev-link");
-      if (num > 1n) {
-        prevLink.href = `/number.html?n=${(num - 1n).toString()}`;
+    function changePage(delta) {
+      currentPage += delta;
+      fetchHomePage();
+      document.getElementById("group-tabs").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function changePageSize() {
+      pageSize = parseInt(document.getElementById("page-size-select").value, 10);
+      currentPage = 1;
+      fetchHomePage();
+    }
+
+    function renderLeaderboard(items) {
+      const gridEl = document.getElementById("top-viewed-grid");
+      const pillEl = document.getElementById("leaderboard-pill");
+      const validItems = Array.isArray(items)
+        ? items.filter(item => item && isValidPositiveInt(String(item.number || "")))
+        : [];
+
+      if (validItems.length === 0) {
+        gridEl.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">No view data recorded yet. Open any number page to start tracking!</div>`;
+        pillEl.textContent = "0 tracked";
+        return;
+      }
+
+      pillEl.textContent = `Top ${validItems.length}`;
+      gridEl.innerHTML = validItems.map((item, idx) => {
+        const numStr = String(item.number);
+        const displayNum = formatCompactNumber(numStr);
+        const views = Number(item.views || 0).toLocaleString();
+        const rankClass = idx < 3 ? "lb-rank top-3" : "lb-rank";
+
+        return `
+          <a class="lb-item" href="${numberHref(numStr)}" title="${escapeHtml(numStr)}">
+            <div class="lb-left">
+              <span class="${rankClass}">${idx + 1}</span>
+              <span class="lb-num">${displayNum}</span>
+            </div>
+            <span class="lb-views">👁️ ${views}</span>
+          </a>
+        `;
+      }).join("");
+    }
+
+    function renderRecentFacts(items) {
+      const feedEl = document.getElementById("recent-facts-feed");
+      const pillEl = document.getElementById("recent-facts-pill");
+      const validItems = Array.isArray(items)
+        ? items.filter(item => item && isValidPositiveInt(String(item.number || "")))
+        : [];
+
+      if (validItems.length === 0) {
+        feedEl.innerHTML = `<div class="empty-state">No community facts submitted yet. Open any number page to contribute the first one!</div>`;
+        pillEl.textContent = "0 recent";
+        return;
+      }
+
+      pillEl.textContent = `${validItems.length} latest`;
+      feedEl.innerHTML = validItems.slice(0, dataSaver ? 5 : 10).map(item => {
+        const numStr = String(item.number);
+        const displayNum = formatCompactNumber(numStr);
+        const text = escapeHtml(item.text || "");
+        const submitter = item.submitter ? `Submitted by <strong>${escapeHtml(item.submitter)}</strong>` : "Anonymous contributor";
+        const ts = formatFactTimestamp(item.createdAt);
+        const timeHtml = ts ? ` &bull; <span title="${escapeHtml(item.createdAt)}">${ts}</span>` : "";
+
+        return `
+          <div class="feed-item">
+            <div class="feed-header">
+              <a class="feed-num-link" href="${numberHref(numStr)}" title="${escapeHtml(numStr)}">#${displayNum}</a>
+              <span class="feed-meta">${submitter}${timeHtml}</span>
+            </div>
+            <div class="feed-text">${text}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderHomeData(data, fromCache = false) {
+      const {
+        items = [],
+        counts = {},
+        page = 1,
+        totalPages = 1,
+        totalFiltered = 0,
+        topViewed = [],
+        recentFacts = []
+      } = data;
+
+      currentPage = page;
+
+      document.getElementById("count-all").textContent = (counts.all || 0).toLocaleString();
+      document.getElementById("count-small").textContent = (counts.small || 0).toLocaleString();
+      document.getElementById("count-medium").textContent = (counts.medium || 0).toLocaleString();
+      document.getElementById("count-large").textContent = (counts.large || 0).toLocaleString();
+      document.getElementById("count-huge").textContent = (counts.huge || 0).toLocaleString();
+      document.getElementById("count-community").textContent = (counts.community || 0).toLocaleString();
+      document.getElementById("total-indexed-pill").textContent = `${(counts.all || 0).toLocaleString()} indexed`;
+
+      const safeItems = items.filter(entry => entry && isValidPositiveInt(String(entry.n || "")));
+      const grid = document.getElementById("catalog-grid");
+
+      if (safeItems.length === 0) {
+        grid.style.display = "block";
+        grid.innerHTML = `<div class="empty-state">No indexed numbers match this filter. Search any integer above to add it!</div>`;
       } else {
-        prevLink.style.opacity = "0.4";
-        prevLink.style.pointerEvents = "none";
+        grid.style.display = "grid";
+        grid.innerHTML = safeItems.map(entry => {
+          const numStr = String(entry.n);
+          const label = formatCompactNumber(numStr);
+          const isCommunity = entry.c === 1;
+          return `<a class="num-tile ${isCommunity ? "discovered" : ""}" href="${numberHref(numStr)}" title="${escapeHtml(numStr)}">${label}</a>`;
+        }).join("");
       }
-      document.getElementById("next-link").href = `/number.html?n=${(num + 1n).toString()}`;
 
-      document.getElementById("form-num-label").textContent = displayStr;
-      document.getElementById("hidden-number-input").value = rawStr;
-      document.getElementById("val-parity").textContent = num % 2n === 0n ? "Even" : "Odd";
+      document.getElementById("page-indicator").textContent = `Page ${page.toLocaleString()} of ${totalPages.toLocaleString()} (${totalFiltered.toLocaleString()} items)`;
+      document.getElementById("prev-page-btn").disabled = page <= 1;
+      document.getElementById("next-page-btn").disabled = page >= totalPages;
 
-      // Immediate base conversions
-      document.getElementById("val-b2").innerHTML = `<code>${toBaseBigInt(num, 2)}</code>`;
-      document.getElementById("val-b8").innerHTML = `<code>${toBaseBigInt(num, 8)}</code>`;
-      document.getElementById("val-b16").innerHTML = `<code>${toBaseBigInt(num, 16)}</code>`;
-      document.getElementById("val-b36").innerHTML = `<code>${toBaseBigInt(num, 36)}</code>`;
-
-      const selectEl = document.getElementById("base-select");
-      let options = "";
-      for (let b = 2; b <= 36; b++) {
-        globalBases[b] = toBaseBigInt(num, b);
-        options += `<option value="${b}" ${b === 12 ? "selected" : ""}>Base ${b}</option>`;
+      if (!feedsLoaded) {
+        renderLeaderboard(topViewed);
+        renderRecentFacts(recentFacts);
+        feedsLoaded = true;
       }
-      selectEl.innerHTML = options;
-      document.getElementById("val-custom-base").textContent = globalBases[12];
 
-      loadRecordUnified(num, rawStr);
+      const statusEl = document.getElementById("catalog-status");
+      statusEl.textContent = fromCache
+        ? `Cached • ${(counts.community || 0).toLocaleString()} community numbers (0 B transferred)`
+        : `Synced • ${(counts.community || 0).toLocaleString()} community numbers`;
     }
 
-    function updateCustomBase() {
-      const b = document.getElementById("base-select").value;
-      document.getElementById("val-custom-base").textContent = globalBases[b];
-    }
+    async function fetchHomePage(forceRefresh = false) {
+      const query = `page=${currentPage}&limit=${pageSize}&group=${encodeURIComponent(currentGroup)}&class=${encodeURIComponent(currentMathClass)}`;
+      const cacheKey = `numvault_home_v1_${query}`;
 
-    document.getElementById("fact-form")?.addEventListener("submit", async function(e) {
-      e.preventDefault();
-
-      const currentNum = document.getElementById("hidden-number-input").value;
-      const factText = document.getElementById("fact-text").value.trim();
-      const submitterName = document.getElementById("submitter-name").value.trim();
-      if (!factText) return;
-
-      const btn = e.target.querySelector("button[type='submit']");
-      btn.textContent = "Saving...";
-      btn.disabled = true;
+      if (!forceRefresh) {
+        try {
+          const cachedRaw = sessionStorage.getItem(cacheKey);
+          if (cachedRaw) {
+            const cached = JSON.parse(cachedRaw);
+            const ttl = dataSaver ? 300000 : 45000;
+            if (Date.now() - cached.ts < ttl) {
+              renderHomeData(cached.data, true);
+              return;
+            }
+          }
+        } catch (e) {}
+      }
 
       try {
-        const res = await fetch("/api/facts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            number: currentNum,
-            fact: factText,
-            submitter: submitterName
-          })
-        });
-
-        if (!res.ok) throw new Error("Failed to save");
+        const res = await fetch(`/api/home?${query}`);
+        if (!res.ok) throw new Error("Home fetch failed");
         const data = await res.json();
 
-        // Invalidate cached record so subsequent reloads show the new fact
         try {
-          sessionStorage.removeItem(`numvault_record_v2_${currentNum}`);
+          sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data }));
         } catch (e) {}
 
-        e.target.style.display = "none";
-        const successDiv = document.getElementById("form-success");
-        successDiv.innerHTML = `
-          Thank you! Your fact is now saved globally. 
-          <br><br>
-          <a href="/number.html?n=${currentNum}" class="btn">&larr; Refresh Record</a>
-        `;
-        successDiv.style.display = "block";
-
-        const factsList = document.getElementById("facts-list");
-        const savedEntry = data.entry || {
-          text: factText,
-          submitter: submitterName || null,
-          createdAt: new Date().toISOString()
-        };
-        factsList.insertAdjacentHTML("afterbegin", renderCommunityFactItem(savedEntry));
+        renderHomeData(data, false);
       } catch (err) {
-        alert("Could not save fact. Check your KV binding in Cloudflare.");
-        btn.textContent = "Submit Fact";
-        btn.disabled = false;
+        const fallbackItems = [];
+        for (let i = 1; i <= Math.min(pageSize, 100); i++) {
+          fallbackItems.push({ n: String(i), c: 0 });
+        }
+        renderHomeData({
+          items: fallbackItems,
+          counts: { all: 100, small: 100, medium: 0, large: 0, huge: 0, community: 0 },
+          page: 1,
+          totalPages: 1,
+          totalFiltered: 100,
+          topViewed: [],
+          recentFacts: []
+        }, false);
+        document.getElementById("catalog-status").textContent = "Offline / Local Fallback";
       }
-    });
+    }
+
+    syncDataSaverUI();
+    fetchHomePage();
   </script>
 </body>
 </html>
