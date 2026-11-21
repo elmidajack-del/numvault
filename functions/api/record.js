@@ -1,10 +1,20 @@
 export async function onRequestPost({ request, env }) {
   try {
+    if (!env.FACTS_KV) {
+      return new Response(JSON.stringify({ error: "FACTS_KV binding missing" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
     const url = new URL(request.url);
     const raw = (url.searchParams.get("n") || "").trim();
 
     if (!/^[1-9][0-9]*$/.test(raw)) {
-      return new Response(JSON.stringify({ error: "Invalid integer" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Invalid integer" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     const [rawViews, rawFacts, rawProps, rawIndex, rawTop] = await Promise.all([
@@ -30,7 +40,9 @@ export async function onRequestPost({ request, env }) {
     if (idx !== -1) topList[idx].views = updatedViews;
     else topList.push({ number: raw, views: updatedViews });
 
-    topList.sort((a, b) => (b.views !== a.views ? b.views - a.views : BigInt(a.number) < BigInt(b.number) ? -1 : 1));
+    topList.sort((a, b) =>
+      b.views !== a.views ? b.views - a.views : BigInt(a.number) < BigInt(b.number) ? -1 : 1
+    );
     if (topList.length > 25) topList.length = 25;
     writes.push(env.FACTS_KV.put("top_viewed", JSON.stringify(topList)));
 
@@ -44,6 +56,9 @@ export async function onRequestPost({ request, env }) {
       headers: { "Content-Type": "application/json" }
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Server error" }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 }
